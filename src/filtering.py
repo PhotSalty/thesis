@@ -1,11 +1,10 @@
 # Applying a "moving average filter"
 
 from math import ceil
-from statistics import stdev
+from statistics import mode, stdev
 import numpy as np
 import pickle as pkl
 import matplotlib.pyplot as plt
-import scipy
 from scipy.signal import lfilter, freqz, filtfilt, butter
 
 ## Functions:
@@ -66,21 +65,7 @@ def hp_filter(signal, fs):
 	
 	return y1
 
-def plot_fandraw(raw, filtered, t):
-	fig, axs = plt.subplots(3)
-	fig.suptitle('Raw and filtered signal')
-	for i in np.arange(3):
-		axs[i].plot(t, raw[:, i], color = 'red', linewidth = .75)
-		axs[i].plot(t, filtered[:, i], color = 'blue', linewidth = .75, alpha = 0.5)
-		axs[i].grid()
-
-def plot_hist(signal, num_of_bins):
-	fig, axs = plt.subplots(3)
-	fig.suptitle('Filtered Signal Histogram')
-	for i in np.arange(3):
-		axs[i].hist(signal[:, i], bins = num_of_bins, density = True, color = 'b')
-
-def plot_spikes(signal, spikes):
+def extract_spikes_signal(signal, spikes):
 	spks_signal = signal.copy()
 	spks_spaces = signal.copy()
 	k = 0
@@ -103,6 +88,30 @@ def plot_spikes(signal, spikes):
 	spks_signal = spks_signal[0:k, :]
 	spks_spaces = spks_spaces[0:j, :]
 
+	return spks_signal, spks_spaces
+
+def plot_fandraw(raw, filtered, t):
+	fig, axs = plt.subplots(3)
+	fig.suptitle('Raw and filtered signal')
+	for i in np.arange(3):
+		axs[i].plot(t, raw[:, i], color = 'red', linewidth = .75)
+		axs[i].plot(t, filtered[:, i], color = 'blue', linewidth = .75, alpha = 0.5)
+		axs[i].grid()
+
+def plot_hist(signal, num_of_bins, n):
+	if n == 1:
+		fig, axs = plt.subplots(1)
+		fig.suptitle('Time length of all spikes')
+		axs.hist(signal, bins = num_of_bins, density = True, facecolor = '#040288', edgecolor='#EADDCA', linewidth=0.5)
+		plt.xlabel('Time (sec)') 
+		plt.ylabel('Multitude')
+	elif n > 1:
+		fig, axs = plt.subplots(n)
+		fig.suptitle('Filtered Signal Histogram')
+		for i in np.arange(n):
+			axs[i].hist(signal[:, i], bins = num_of_bins, density = True, facecolor = '#040288', edgecolor='#EADDCA', linewidth=0.5)
+
+def plot_spikes(spks_signal, spks_spaces):
 	fig, axs = plt.subplots(3, 2)
 	for i in np.arange(3):
 		axs[i][0].plot(spks_signal[:, i], linewidth = 0.5)
@@ -110,6 +119,8 @@ def plot_spikes(signal, spikes):
 
 	axs[0][0].set_title('Continuous spikes')
 	axs[0][1].set_title('Spaces between spikes')
+
+	
 
 
 ## Initialization:
@@ -133,11 +144,15 @@ acc_smth = mav_filter(acc, c = 0.25)
 facc = hp_filter(acc_smth, fs = 64)
 
 
+## Spikes' Signal:
+spk_cont, spk_wide = extract_spikes_signal(facc, spk)
+
+
 ## Plots:
 # (1) spikes signal:
-plot_spikes(facc, spk)
+plot_spikes(spk_cont, spk_wide)
 # (2) filtered and raw signal:
 plot_fandraw(acc, facc, t)
 # (3) signal's histogram:
-plot_hist(facc, num_of_bins = 12)
+plot_hist(spk_dif, num_of_bins = 12, n=1)
 plt.show()
