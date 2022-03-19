@@ -1,7 +1,7 @@
 # Applying a "moving average filter"
 
-from math import ceil
-from statistics import mode, stdev
+from math import ceil, floor
+# from statistics import mode, stdev
 import numpy as np
 import pickle as pkl
 import matplotlib.pyplot as plt
@@ -55,7 +55,7 @@ def hp_filter(signal, fs):
 	y1 = signal.copy()
 	# y2 = signal.copy()
 	for i in np.arange(3):
-		y1[:, i] = filtfilt(b, a, acc_smth[:, i])
+		y1[:, i] = filtfilt(b, a, signal[:, i])
 		# y2[:, i] = lfilter(b, a, acc_smth[:, i])
 
 	# # 2nd method - Laplace filter:
@@ -73,8 +73,8 @@ def extract_spikes_signal(signal, spikes):
 	samples = 64
 	spaces = 150
 	for s in spikes:
-		i = int(np.floor(s[0])*samples)
-		bound = int(np.ceil(s[1])*samples)
+		i = floor(s[0])*samples
+		bound = ceil(s[1])*samples
 		# print(i, bound)
 		while i <= bound:
 			spks_signal[k, :] = signal[i, :]
@@ -144,7 +144,7 @@ acc_smth = mav_filter(acc, c = 0.25)
 facc = hp_filter(acc_smth, fs = 64)
 
 
-## Spikes' Signal:
+## Construct Spikes' Signal:
 spk_cont, spk_wide = extract_spikes_signal(facc, spk)
 
 
