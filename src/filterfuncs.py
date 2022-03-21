@@ -3,10 +3,10 @@
 from math import ceil, floor
 # from statistics import mode, stdev
 import numpy as np
+import pandas as pd
 import pickle as pkl
 import matplotlib.pyplot as plt
 from scipy.signal import lfilter, freqz, filtfilt, butter
-# import pandas as pd
 from tkinter.font import BOLD
 
 ## Functions:
@@ -147,3 +147,31 @@ def filtering(name):
 
 	return spk_dif, facc, acc_spk_cont, acc_spk_wide, fang, ang_spk_cont, ang_spk_wide
 
+def spike_signals(mode):
+	names = np.array(["gali", "sdrf", "sltn", "pasx", "anti"])
+	spk_len = list()
+
+	acc_spk_c = list()
+	acc_spk_w = list()
+	ang_spk_c = list()
+	ang_spk_w = list()
+
+	#return order: spk_dif, facc, acc_spk_cont, acc_spk_wide, fang, ang_spk_cont, ang_spk_wide
+	for name in names:
+		dif, _, a, b, _, c, d = filtering(name)
+		spk_len.extend(dif)
+		acc_spk_c.extend(a)
+		acc_spk_w.extend(b)
+		ang_spk_c.extend(c)
+		ang_spk_w.extend(d)
+
+	if mode == 'spk':
+		return spk_len
+	elif mode == 'acc':
+		return acc_spk_c, acc_spk_w
+	elif mode == 'ang':
+		return ang_spk_c, ang_spk_w
+	elif mode == 'all':
+		return spk_len, acc_spk_c, acc_spk_w, ang_spk_c, ang_spk_w
+	else:
+		print("Error: Wrong mode")
