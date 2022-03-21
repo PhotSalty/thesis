@@ -1,25 +1,6 @@
-from matplotlib.pyplot import legend
 from filterfuncs import *
-import pandas as pd
 
-## Initialization:
-# (1) Input:
-names = np.array(["gali", "sdrf", "sltn", "pasx", "anti"])
-spk_dif = list()
-
-acc_spk_c = list()
-acc_spk_w = list()
-ang_spk_c = list()
-ang_spk_w = list()
-
-#return order: spk_dif, facc, acc_spk_cont, acc_spk_wide, fang, ang_spk_cont, ang_spk_wide
-for name in names:
-	dif, _, a, b, _, c, d = filtering(name)
-	spk_dif.extend(dif)
-	acc_spk_c.extend(a)
-	acc_spk_w.extend(b)
-	ang_spk_c.extend(c)
-	ang_spk_w.extend(d)
+spk_time, acc_spk_c, acc_spk_w, ang_spk_c, ang_spk_w = spike_signals('all')
 
 ## Plots:
 
@@ -36,15 +17,28 @@ axs[0][1].set_title('Zeros between each spike')
 
 
 # (2) Time length of Spikes:
-df = pd.DataFrame(spk_dif, columns = list(['tlngth']))
+df = pd.DataFrame(spk_time, columns = list(['tlngth']))
 
 fig, axs = plt.subplots(2)
 fig.suptitle("Spikes\' time-length of 5 athletes", fontweight = 'bold')
-axs[0].scatter(range(len(spk_dif)), spk_dif, color = 'darkgreen', linewidth = .5)
+axs[0].scatter(range(len(spk_time)), spk_time, color = 'darkgreen', linewidth = .5)
 df.plot(kind='hist', ax=axs[1], legend = False, edgecolor = 'white', linewidth = .5)
-df.plot(kind='kde', ax=axs[1], secondary_y=True, legend = False, linewidth = 1.5)
+df.plot(kind='kde', ax=axs[1], secondary_y=True, legend=False, linewidth = 1.5)
 axs[1].set_xlabel('Time (s)')
 axs[1].set_ylabel('Multitude')
+
+
+mode_spk_len = round(df['tlngth'].mode().iloc[0], 2)
+median_spk_len = round(df['tlngth'].median(), 2)
+mean_spk_len = round(df['tlngth'].mean(), 2)
+max_spk_len = round(df['tlngth'].max(), 2)
+
+measurements = [mode_spk_len, median_spk_len, mean_spk_len, max_spk_len]
+names = ["mode", "median", "mean", "max"]
+colors = ['lightgreen', 'darkblue', 'magenta', 'darkgreen']
+for measurement, name, color in zip(measurements, names, colors):
+    plt.axvline(x=measurement, linestyle='--', linewidth=1.5, label='{0} at {1}'.format(name, measurement), c=color)
+plt.legend()
 
 # ax = df.plot(kind='hist')
 # df.plot(kind='kde', ax=ax, secondary_y=True)
