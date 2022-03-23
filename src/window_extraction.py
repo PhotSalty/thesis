@@ -52,14 +52,91 @@ def plot_spk_analysis():
 
 spikes = pd.DataFrame(spike_signals('spk'), columns = list(['timelen']))
 max_spk_len = round(spikes['timelen'].max(), 3)
-# Window_length = maximum spike length of all athlets + offset
-# For the case of a better athlete (higher jump), we add a constant offset
+## Window_length = maximum spike length of all athlets + offset
+## For the case of a better athlete (higher jump), we add a constant offset
 jmp_offset = 0.2	# seconds
 wd_time_len = max_spk_len + jmp_offset	# seconds
-wd_smpl_len = wd_time_len * 64	# samples
+wd_smpl_len = ceil(wd_time_len * 64)	# samples
 
-## Separating into windows:
-# (1) input acc, ang signals and window length
-# (2) iterration with different steps:
-#     (i) step = 0.3*wd_smpl_len (samples) -> 0 "spike-window-parts" inside current window
-#    (ii) step = 1               (samples) -> N "spike-window-parts" inside current window
+### Separating into windows:
+##  (1) input acc, ang signals and window length
+##  (2) iterration with different steps:
+##      (i) step = 0.3*wd_smpl_len (samples) -> 0 "spike-window-parts" inside current window
+##     (ii) step = 1               (samples) -> N "spike-window-parts" inside current window
+
+name = 'sdrf'
+spks, _, acc, _, _, ang, _, _ = filtering(name)
+s_tot = ceil(len(acc[:, 0]))
+## The maximum length of windows = total samples
+## Each window will contain wd_smpl_len samples
+wds = np.zeros([s_tot, wd_smpl_len, 3])
+
+# acc_temp = np.vstack( ( acc, np.zeros([58, 3]) ) )
+# for i in np.arange(s_tot, step = floor(wd_smpl_len*0.3)):
+# 	ls = i + wd_smpl_len
+# 	# print( np.shape(wds[i,:,:]) , np.shape(acc_temp[i:ls,:]) , (i, len(acc_temp[:,0])))
+# 	wds[i, :, :] = acc_temp[i:ls, :]
+
+spks_samp = spks * 64
+i = 0
+j = 0
+s = 0
+acc_temp = np.vstack( ( acc, np.zeros([62, 3]) ) )
+# print(np.shape(acc_temp), np.shape(acc))
+
+loot = []
+while s <= s_tot:
+	ls = s + wd_smpl_len
+	wds[i, :, :] = acc_temp[s:ls, :]
+
+	## Check_001
+	# print((s, ls), np.shape(acc)[0])
+
+	i += 1
+	flag = True
+	while flag:
+		if ls < ceil(spks_samp[j, 0]):
+			step = floor(wd_smpl_len*0.3)
+			flag = False
+		elif ls <= ceil(spks_samp[j, 1]):
+			step = 1
+			flag = False
+		else:
+			if j < len(spks_samp[:, 0])-1:
+				j += 1
+			else:
+				step = floor(wd_smpl_len*0.3)
+				flag = False
+	s = s + step
+	## Check_002
+	loot.append(step)
+
+### Window-extraction loop Checks:
+##  (001) Indeces of the last 65-sample saved window.
+##        Checking if we cover the full signal length.
+##  (002) Step-changes are equal to the number of spikes.
+##        We can find a method to label using the step.
+## -Scatter loot explanation-
+# plt.scatter(np.arange(len(loot)), loot)
+# plt.show()
+
+## Deleting the unused slots in the rear of wds
+zer = np.zeros([65, 3])
+c = 1
+flag = True
+while wds[-c, :, :].any() == zer.any():
+	c += 1
+
+## The last non-zero tuple must be equal to the last acc-tuple
+## print(wds[-c,:, :], acc[-1, :])
+
+## We exclude the last window, losing a constructed non-spike
+## window (mixed signal-tuples with zero-tuples)
+wds = wds[1:-c-1, :, :]
+
+## -Plot last wds and acc tuples-
+fig, axs = plt.subplots(2)
+axs[0].plot(acc[-66:, :])
+axs[1].plot(wds[-1, :, :])
+plt.show()
+
