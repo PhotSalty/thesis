@@ -145,7 +145,7 @@ def filtering(name):
 	acc_spk_cont, acc_spk_wide = extract_spikes_signal(facc, spk)
 	ang_spk_cont, ang_spk_wide = extract_spikes_signal(fang, spk)
 
-	return spk_dif, facc, acc_spk_cont, acc_spk_wide, fang, ang_spk_cont, ang_spk_wide
+	return spk, spk_dif, facc, acc_spk_cont, acc_spk_wide, fang, ang_spk_cont, ang_spk_wide
 
 def spike_signals(mode):
 	names = np.array(["gali", "sdrf", "sltn", "pasx", "anti"])
@@ -158,7 +158,7 @@ def spike_signals(mode):
 
 	#return order: spk_dif, facc, acc_spk_cont, acc_spk_wide, fang, ang_spk_cont, ang_spk_wide
 	for name in names:
-		dif, _, a, b, _, c, d = filtering(name)
+		_, dif, _, a, b, _, c, d = filtering(name)
 		spk_len.extend(dif)
 		acc_spk_c.extend(a)
 		acc_spk_w.extend(b)
