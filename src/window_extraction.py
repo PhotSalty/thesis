@@ -98,7 +98,7 @@ while s <= s_tot:
 		if ls < ceil(spks_samp[j, 0]):
 			step = floor(wd_smpl_len*0.3)
 			flag = False
-		elif ls <= ceil(spks_samp[j, 1]):
+		elif s <= ceil(spks_samp[j, 1]):
 			step = 1
 			flag = False
 		else:
@@ -117,13 +117,12 @@ while s <= s_tot:
 ##  (002) Step-changes are equal to the number of spikes.
 ##        We can find a method to label using the step.
 ## -Scatter loot explanation-
-# plt.scatter(np.arange(len(loot)), loot)
-# plt.show()
+plt.scatter(np.arange(len(loot)), loot)
+plt.show()
 
 ## Deleting the unused slots in the rear of wds
 zer = np.zeros([65, 3])
 c = 1
-flag = True
 while wds[-c, :, :].any() == zer.any():
 	c += 1
 
@@ -133,10 +132,15 @@ while wds[-c, :, :].any() == zer.any():
 ## We exclude the last window, losing a constructed non-spike
 ## window (mixed signal-tuples with zero-tuples)
 wds = wds[1:-c-1, :, :]
+print(c)
 
 ## -Plot last wds and acc tuples-
 fig, axs = plt.subplots(2)
 axs[0].plot(acc[-66:, :])
 axs[1].plot(wds[-1, :, :])
 plt.show()
+
+## Labeling: [0, 1]
+## (0) -> irrelevant movement
+## (1) -> full spike in window
 
