@@ -27,8 +27,8 @@ def labeling(dat, k, sbsr):
 	# axs[0].set_ylabel("g")
 	# axs[0].set_title("Accelerators 3D")
 
-names = ["gali", "sdrf", "sltn", "pasx", "anti"]
-name = names[4]
+names = ["gali", "sdrf", "sltn", "pasx", "anti", "komi"]
+name = names[5]
 datap = "C:\\Users\\30698\\Thesis_Fotis\\thesis\\data\\pickled_data\\" + name + ".pkl"
 
 with open(datap, 'rb') as f:
