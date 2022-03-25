@@ -148,7 +148,7 @@ def filtering(name):
 	return spk, spk_dif, facc, acc_spk_cont, acc_spk_wide, fang, ang_spk_cont, ang_spk_wide
 
 def spike_signals(mode):
-	names = np.array(["gali", "sdrf", "sltn", "pasx", "anti"])
+	names = np.array(["gali", "sdrf", "sltn", "pasx", "anti", "komi"])
 	spk_len = list()
 
 	acc_spk_c = list()
