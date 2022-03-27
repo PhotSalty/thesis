@@ -70,25 +70,28 @@ def find_step(spks_sample, j, wd_smpl_len, s):
 def find_step_and_label(spks_sample, j, wd_smpl_len, s):
 	ls = s + wd_smpl_len
 	flag = True
-
+	e = round(0.2 * 64)
 	while flag:
-		if ls < ceil(spks_sample[j, 0]):
-			step = floor(wd_smpl_len*0.3)
+		bound = ls - round(spks_sample[j, 1])
+		if bound < 0:
+			if bound > -e:
+				step = -bound
+			else:
+				step = floor(wd_smpl_len*0.3)
 			flag = False
-		elif s <= ceil(spks_sample[j, 1]):
+			label = 0
+		elif bound <= e: # bound >= 0 and bound <= e:
 			step = 1
 			flag = False
+			label = 1
 		else:
-			if j < len(spks_sample[:, 0]) -1:
+			if j < len(spks_sample[:, 0])-1:
 				j+=1
+				# print(j)
 			else:
 				step = floor(wd_smpl_len*0.3)
 				flag = False
-	
-	if s <= ceil(spks_sample[j, 0])  and  ls >= ceil(spks_sample[j, 1]):
-		label = 1
-	else:
-		label = 0
+				label = 0
 
 	return step, label
 
@@ -97,9 +100,11 @@ def windowing(name, wd_smpl_len):
 	s_tot = ceil(len(acc[:, 0]))
 	## The maximum length of windows = total samples
 	## Each window will contain wd_smpl_len samples
-	wds_acc = np.zeros([s_tot, wd_smpl_len, 3])
-	wds_ang = np.zeros([s_tot, wd_smpl_len, 3])
-	labels = wds_acc[:, 0, 0]
+	wds = np.zeros([s_tot, wd_smpl_len, 6])
+	# wds_acc = np.zeros([s_tot, wd_smpl_len, 3])
+	# wds_ang = np.zeros([s_tot, wd_smpl_len, 3])
+	labels = wds[:, 0, 0].copy()
+	# labels = wds_acc[:, 0, 0]
 	
 	acc_temp = np.vstack( ( acc, np.zeros([62, 3]) ) )
 	ang_temp = np.vstack( ( ang, np.zeros([62, 3]) ) )
@@ -111,25 +116,30 @@ def windowing(name, wd_smpl_len):
 	while s <= s_tot:
 		ls = s + wd_smpl_len
 		# print(i, s, wd_smpl_len)
-		wds_acc[i, :, :] = acc_temp[s:ls, :]
-		wds_ang[i, :, :] = ang_temp[s:ls, :]
+		wds[i, :, 0:3] = acc_temp[s:ls, :]
+		wds[i, :, 3:] = ang_temp[s:ls, :]
+		# wds_acc[i, :, :] = acc_temp[s:ls, :]
+		# wds_ang[i, :, :] = ang_temp[s:ls, :]
 		step, labels[i] = find_step_and_label(spks_samp, j, wd_smpl_len, s)
 		
 		i += 1
 		s = s + step
+		print((s, s_tot, i))
 
 	## Finding the unused slots in the rear of wds
 	zer = np.zeros([65, 3])
 	c = 1
-	while wds_acc[-c, :, :].any() == zer.any():
+	while wds[-c, :, :].any() == zer.any():
 		c += 1
 
 	## We exclude the last window, losing a constructed non-spike
 	## window (mixed signal-tuples with zero-tuples)
-	wds_acc = wds_acc[1:-c-1, :, :]
-	wds_ang = wds_ang[1:-c-1, :, :]
+	wds = wds[1:-c-1, :, :]
+	# wds_acc = wds_acc[1:-c-1, :, :]
+	# wds_ang = wds_ang[1:-c-1, :, :]
 	labels = labels[1:-c-1]
-	return wds_acc, wds_ang, labels, acc, ang
+	return wds, labels, acc, ang
+	# return wds_acc, wds_ang, labels, acc, ang
 
 
 ## Plot All-Spikes Analysis:
@@ -139,7 +149,7 @@ spikes = pd.DataFrame(spike_signals('spk'), columns = list(['timelen']))
 max_spk_len = round(spikes['timelen'].max(), 3)
 ## Window_length = maximum spike length of all athlets + offset
 ## For the case of a better athlete (higher jump), we add a constant offset
-jmp_offset = 0.2	# seconds
+jmp_offset = 0	# seconds
 wd_time_len = max_spk_len + jmp_offset	# seconds
 wd_smpl_len = ceil(wd_time_len * 64)	# samples
 
@@ -149,21 +159,22 @@ wd_smpl_len = ceil(wd_time_len * 64)	# samples
 ##      (i) step = 0.3*wd_smpl_len (samples) -> 0 "spike-window-parts" inside current window
 ##     (ii) step = 1               (samples) -> N "spike-window-parts" inside current window
 
-wds_acc, wds_ang, labels, acc, ang = windowing('sdrf', wd_smpl_len)
+wds, labels, acc, ang = windowing('sdrf', wd_smpl_len)
+# wds_acc, wds_ang, labels, acc, ang = windowing('sdrf', wd_smpl_len)
 
 ## Labels - count and plot:
 unique, counts = np.unique(labels, return_counts=True)
 d = dict(zip(unique, counts))
 print(d)
-# plt.plot(labels, color = 'teal', linewidth = 1.5)
-# plt.show()
+plt.plot(labels, color = 'teal', linewidth = 1.5)
+plt.show()
 
 
 ## -Plot last wds and acc tuples-
-fig, axs = plt.subplots(2,2)
-axs[0][0].plot(acc[-66:, :])
-axs[0][1].plot(wds_acc[-1, :, :])
-axs[1][0].plot(ang[-66:, :])
-axs[1][1].plot(wds_ang[-1, :, :])
-plt.show()
+# fig, axs = plt.subplots(2,2)
+# axs[0][0].plot(acc[-66:, :])
+# axs[0][1].plot(wds[-1, :, 0:3])
+# axs[1][0].plot(ang[-66:, :])
+# axs[1][1].plot(wds[-1, :, 3:])
+# plt.show()
 
