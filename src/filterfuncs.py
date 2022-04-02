@@ -1,5 +1,3 @@
-# Functions for filtering
-
 from math import ceil, floor
 # from statistics import mode, stdev
 import numpy as np
@@ -67,60 +65,6 @@ def hp_filter(signal, fs):
 	
 	return y1
 
-def extract_spikes_signal(signal, spikes):
-	spks_signal = signal.copy()
-	spks_spaces = signal.copy()
-	k = 0
-	j = 0
-	samples = 64
-	spaces = 150
-	for s in spikes:
-		i = floor(s[0])*samples
-		bound = ceil(s[1])*samples
-		# print(i, bound)
-		while i <= bound:
-			spks_signal[k, :] = signal[i, :]
-			spks_spaces[j, :] = signal[i, :]
-			k += 1
-			j += 1
-			i += 1
-		spks_spaces[j:j+spaces, :] = np.zeros((spaces, 3))
-		j = j+spaces
-
-	spks_signal = spks_signal[0:k, :]
-	spks_spaces = spks_spaces[0:j, :]
-	return spks_signal, spks_spaces
-
-def plot_fandraw(raw, filtered, t):
-	fig, axs = plt.subplots(3)
-	fig.suptitle('Raw and filtered signal')
-	for i in np.arange(3):
-		axs[i].plot(t, raw[:, i], color = 'red', linewidth = .75)
-		axs[i].plot(t, filtered[:, i], color = 'blue', linewidth = .75, alpha = 0.5)
-		axs[i].grid()
-
-def plot_hist(signal, num_of_bins, n):
-	if n == 1:
-		fig, axs = plt.subplots(1)
-		fig.suptitle('Time length of all spikes')
-		axs.hist(signal, bins = num_of_bins, density = True, facecolor = '#040288', edgecolor='#EADDCA', linewidth=0.5)
-		plt.xlabel('Time (sec)') 
-		plt.ylabel('Multitude')
-	elif n > 1:
-		fig, axs = plt.subplots(n)
-		fig.suptitle('Filtered Signal Histogram')
-		for i in np.arange(n):
-			axs[i].hist(signal[:, i], bins = num_of_bins, density = True, facecolor = '#040288', edgecolor='#EADDCA', linewidth=0.5)
-
-def plot_spikes(spks_signal, spks_spaces):
-	fig, axs = plt.subplots(3, 2)
-	for i in np.arange(3):
-		axs[i][0].plot(spks_signal[:, i], linewidth = 0.5)
-		axs[i][1].plot(spks_spaces[:, i], color = 'magenta', linewidth = 0.5)
-
-	axs[0][0].set_title('Continuous spikes')
-	axs[0][1].set_title('Spaces between spikes')
-
 def filtering(name):
 	acc, ang, t, spk, blk, srv = read_data(name)
 	# (2) Calculations:
@@ -147,10 +91,33 @@ def filtering(name):
 
 	return spk, spk_dif, facc, acc_spk_cont, acc_spk_wide, fang, ang_spk_cont, ang_spk_wide
 
-def spike_signals(mode):
-	names = np.array(["gali", "sdrf", "sltn", "pasx", "anti", "komi"])
-	spk_len = list()
+def extract_spikes_signal(signal, spikes):
+	spks_signal = signal.copy()
+	spks_spaces = signal.copy()
+	k = 0
+	j = 0
+	samples = 64
+	spaces = 150
+	for s in spikes:
+		i = floor(s[0])*samples
+		bound = ceil(s[1])*samples
+		# print(i, bound)
+		while i <= bound:
+			spks_signal[k, :] = signal[i, :]
+			spks_spaces[j, :] = signal[i, :]
+			k += 1
+			j += 1
+			i += 1
+		spks_spaces[j:j+spaces, :] = np.zeros((spaces, 3))
+		j = j+spaces
 
+	spks_signal = spks_signal[0:k, :]
+	spks_spaces = spks_spaces[0:j, :]
+	return spks_signal, spks_spaces
+
+def concatenate_signals(mode, names):
+	# names = np.array(["gali", "sdrf", "sltn", "pasx", "anti", "komi"])
+	spk_len   = list()
 	acc_spk_c = list()
 	acc_spk_w = list()
 	ang_spk_c = list()
@@ -175,3 +142,48 @@ def spike_signals(mode):
 		return spk_len, acc_spk_c, acc_spk_w, ang_spk_c, ang_spk_w
 	else:
 		print("Error: Wrong mode")
+
+def window_length(names):
+	spikes = pd.DataFrame(concatenate_signals('spk', names), columns = list(['timelen']))
+	mean_spk_len = round(spikes['timelen'].mean(), 3)
+	## Window_length = mean spike length of all athlets + offset
+	## For the case of a better athlete (higher jump), we add a constant offset
+	jmp_offset = 0	# seconds
+	wd_time_len = mean_spk_len + jmp_offset	# seconds
+	wd_smpl_len = ceil(wd_time_len * 64)	# samples
+	
+	return wd_smpl_len
+
+
+#########################   Basic plotting functions:   ################################
+
+def plot_fandraw(raw, filtered, t):
+	fig, axs = plt.subplots(3, constrained_layout = True)
+	fig.canvas.manager.set_window_title('Signals')
+	fig.suptitle('Raw and filtered signal', fontsize = 16)
+	for i in np.arange(3):
+		axs[i].plot(t, raw[:, i], color = 'red', linewidth = .75)
+		axs[i].plot(t, filtered[:, i], color = 'blue', linewidth = .75, alpha = 0.5)
+		axs[i].grid()
+
+def plot_hist(signal, num_of_bins, n):
+	if n == 1:
+		fig, axs = plt.subplots(1)
+		fig.suptitle('Time length of all spikes')
+		axs.hist(signal, bins = num_of_bins, density = True, facecolor = '#040288', edgecolor='#EADDCA', linewidth=0.5)
+		plt.xlabel('Time (sec)') 
+		plt.ylabel('Multitude')
+	elif n > 1:
+		fig, axs = plt.subplots(n)
+		fig.suptitle('Filtered Signal Histogram')
+		for i in np.arange(n):
+			axs[i].hist(signal[:, i], bins = num_of_bins, density = True, facecolor = '#040288', edgecolor='#EADDCA', linewidth=0.5)
+
+def plot_spikes(spks_signal, spks_spaces):
+	fig, axs = plt.subplots(3, 2)
+	for i in np.arange(3):
+		axs[i][0].plot(spks_signal[:, i], linewidth = 0.5)
+		axs[i][1].plot(spks_spaces[:, i], color = 'magenta', linewidth = 0.5)
+
+	axs[0][0].set_title('Continuous spikes')
+	axs[0][1].set_title('Spaces between spikes')
