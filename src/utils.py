@@ -1,4 +1,6 @@
 import random as rand
+from math import floor, ceil
+import os
 import numpy as np
 import pandas as pd
 import pickle as pkl
@@ -19,8 +21,14 @@ class recording:
 		self.filt_acc = None
 		self.filt_ang = None
 
+		self.windows = None
+		self.labels = None
+
 	def read_data(self):
-		datap = "C:\\Users\\30698\\Thesis_Fotis\\thesis\\data\\pickled_data\\" + self.name + ".pkl"
+		p = os.path.dirname(os.getcwd())
+		p1 = p + '\\data\\pickled_data\\'
+		p2 = p + '\\data\\recordings\\'
+		datap = p1 + self.name + ".pkl"
 		
 		with open(datap, 'rb') as f:
 			data = pkl.load(f)
@@ -29,7 +37,7 @@ class recording:
 		# blocks = data[1]
 		# services = data[2]
 
-		datar = "C:\\Users\\30698\\Thesis_Fotis\\thesis\\data\\recordings\\" + self.name
+		datar = p2 + self.name
 		data1 = np.fromfile(datar+"acc.bin", dtype=np.int16, sep='')
 		data2 = np.fromfile(datar+"angularrate.bin", dtype=np.int16, sep='')
 
@@ -84,18 +92,64 @@ class recording:
 		self.filt_acc = facc
 		self.filt_ang = fang
 
-def plot_fandraw(raw, filtered, t):
-	fig, axs = plt.subplots(3)
-	fig.suptitle('Raw and filtered signal')
-	for i in np.arange(3):
-		axs[i].plot(t, raw[:, i], color = 'red', linewidth = .75)
-		axs[i].plot(t, filtered[:, i], color = 'blue', linewidth = .75, alpha = 0.5)
-		axs[i].grid()
+	def find_step_and_label(self, spks_sample, j, wd_smpl_len, s):
+		ls = s + wd_smpl_len
+		flag = True
+		e = round(0.2 * 64)
+		while flag:
+			bound = ls - round(spks_sample[j, 1])
+			if bound < 0:
+				if bound > -e:
+					step = -bound
+				else:
+					step = floor(wd_smpl_len*0.3)
+				flag = False
+				label = 0
+			elif bound <= e: # bound >= 0 and bound <= e:
+				step = 1
+				flag = False
+				label = 1
+			else:
+				if j < len(spks_sample[:, 0])-1:
+					j+=1
+					# print(j)
+				else:
+					step = floor(wd_smpl_len*0.3)
+					flag = False
+					label = 0
 
+		return step, label
 
-subject01 = recording(name = 'sltn', tag = '01')
-subject01.read_data()
-subject01.filtering()
+	def windowing(self, acc, ang, spks, wd_smpl_len):
+		s_tot = ceil(len(acc[:, 0]))
+		## The maximum length of windows = total samples
+		## Each window will contain wd_smpl_len samples
+		wds = np.zeros([s_tot, wd_smpl_len, 6])
+		labels = wds[:, 0, 0].copy()
+		acc_temp = np.vstack( ( acc, np.zeros([62, 3]) ) )
+		ang_temp = np.vstack( ( ang, np.zeros([62, 3]) ) )
+		i = 0
+		j = 0
+		s = 0
 
-plot_fandraw(subject01.raw_acc, subject01.filt_acc, subject01.t)
-plt.show()
+		while s <= s_tot:
+			ls = s + wd_smpl_len
+			wds[i, :, 0:3] = acc_temp[s:ls, :]
+			wds[i, :, 3:] = ang_temp[s:ls, :]
+			step, labels[i] = self.find_step_and_label(spks, j, wd_smpl_len, s)
+			
+			i += 1
+			s = s + step
+
+		## Finding the unused slots in the rear of wds
+		zer = np.zeros([65, 3])
+		c = 1
+		while wds[-c, :, :].any() == zer.any():
+			c += 1
+
+		## We exclude the last window, losing a constructed non-spike
+		## window (mixed signal-tuples with zero-tuples)
+		wds = wds[1:-c-1, :, :]
+		labels = labels[1:-c-1]
+		self.windows = wds
+		self.labels = labels
