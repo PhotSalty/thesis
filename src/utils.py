@@ -23,6 +23,7 @@ class recording:
 
 		self.windows = None
 		self.labels = None
+		self.timestamps = None
 
 	def read_data(self):
 		p = os.path.dirname(os.getcwd())
@@ -96,13 +97,15 @@ class recording:
 		ls = s + wd_smpl_len
 		flag = True
 		e = round(0.2 * 64)
+		ovl = 0.6
 		while flag:
 			bound = ls - round(spks_sample[j, 1])
 			if bound < 0:
-				if bound > -e:
+				if -bound <= wd_smpl_len: # ls > floor(spks_sample[j, 0]):
 					step = -bound
 				else:
-					step = floor(wd_smpl_len*0.3)
+					step = round(wd_smpl_len*ovl)
+					# step = floor(wd_smpl_len*0.4)
 				flag = False
 				label = 0
 			elif bound <= e: # bound >= 0 and bound <= e:
@@ -114,7 +117,8 @@ class recording:
 					j+=1
 					# print(j)
 				else:
-					step = floor(wd_smpl_len*0.3)
+					step = round(wd_smpl_len*ovl)
+					# step = floor(wd_smpl_len*0.4)
 					flag = False
 					label = 0
 
@@ -126,6 +130,7 @@ class recording:
 		## Each window will contain wd_smpl_len samples
 		wds = np.zeros([s_tot, wd_smpl_len, 6])
 		labels = wds[:, 0, 0].copy()
+		timestamps = labels.copy()
 		acc_temp = np.vstack( ( acc, np.zeros([62, 3]) ) )
 		ang_temp = np.vstack( ( ang, np.zeros([62, 3]) ) )
 		i = 0
@@ -136,6 +141,7 @@ class recording:
 			ls = s + wd_smpl_len
 			wds[i, :, 0:3] = acc_temp[s:ls, :]
 			wds[i, :, 3:] = ang_temp[s:ls, :]
+			timestamps[i] = s / 64
 			step, labels[i] = self.find_step_and_label(spks, j, wd_smpl_len, s)
 			
 			i += 1
@@ -153,3 +159,4 @@ class recording:
 		labels = labels[1:-c-1]
 		self.windows = wds
 		self.labels = labels
+		self.timestamps = timestamps
