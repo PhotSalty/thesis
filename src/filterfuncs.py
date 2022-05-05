@@ -69,6 +69,7 @@ def filtering(name):
 	acc, ang, t, spk, blk, srv = read_data(name)
 	# (2) Calculations:
 	spk_dif = spk[:,1] - spk[:,0]
+	nspk, _ = np.shape(spk)
 	# spk_mean = np.mean(spk_dif)
 	# spk_max = np.max(spk_dif)
 	# print(spk_max)
@@ -89,7 +90,7 @@ def filtering(name):
 	acc_spk_cont, acc_spk_wide = extract_spikes_signal(facc, spk)
 	ang_spk_cont, ang_spk_wide = extract_spikes_signal(fang, spk)
 
-	return spk, spk_dif, facc, acc_spk_cont, acc_spk_wide, fang, ang_spk_cont, ang_spk_wide
+	return nspk, spk, spk_dif, facc, acc_spk_cont, acc_spk_wide, fang, ang_spk_cont, ang_spk_wide
 
 def extract_spikes_signal(signal, spikes):
 	spks_signal = signal.copy()
@@ -116,16 +117,20 @@ def extract_spikes_signal(signal, spikes):
 	return spks_signal, spks_spaces
 
 def concatenate_signals(mode, names):
-	# names = np.array(["gali", "sdrf", "sltn", "pasx", "anti", "komi"])
+	# names = np.array(["gali", "sdrf", "sltn", "pasx", "anti", "komi", "fot"])
 	spk_len   = list()
 	acc_spk_c = list()
 	acc_spk_w = list()
 	ang_spk_c = list()
 	ang_spk_w = list()
+	nspks = np.zeros([len(names), 1])
+	i = 0
 
 	#return order: spk_dif, facc, acc_spk_cont, acc_spk_wide, fang, ang_spk_cont, ang_spk_wide
 	for name in names:
-		_, dif, _, a, b, _, c, d = filtering(name)
+		nspk, _, dif, _, a, b, _, c, d = filtering(name)
+		nspks[i] = nspk
+		i += 1
 		spk_len.extend(dif)
 		acc_spk_c.extend(a)
 		acc_spk_w.extend(b)
@@ -133,7 +138,7 @@ def concatenate_signals(mode, names):
 		ang_spk_w.extend(d)
 
 	if mode == 'spk':
-		return spk_len
+		return spk_len, nspks
 	elif mode == 'acc':
 		return acc_spk_c, acc_spk_w
 	elif mode == 'ang':
@@ -143,8 +148,19 @@ def concatenate_signals(mode, names):
 	else:
 		print("Error: Wrong mode")
 
+def base_stats(names):
+	spks, nspks = concatenate_signals('spk', names)
+	spks = np.array(spks)
+
+	print(f'# Total spikes = {np.sum(nspks, dtype = np.int32)}')
+	for i in np.arange(len(names)):
+		print(f'  Subject_0{i+1}: {names[i]} = {int(nspks[i])}')
+	print(f'\n#  Max = {spks.max():.3f}  #  Min = {spks.min():.3f}')
+	print(f'# Mean = {spks.mean():.3f}  #  Std = {spks.std():.3f}')
+
 def window_length(names):
-	spikes = pd.DataFrame(concatenate_signals('spk', names), columns = list(['timelen']))
+	spks, _ = concatenate_signals('spk', names)
+	spikes = pd.DataFrame(spks, columns = list(['timelen']))
 	mean_spk_len = round(spikes['timelen'].mean(), 3)
 	## Window_length = mean spike length of all athlets + offset
 	## For the case of a better athlete (higher jump), we add a constant offset

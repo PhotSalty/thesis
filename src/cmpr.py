@@ -43,7 +43,7 @@ def data_load(name):
 	return spks, acc, ang
 
 
-names = ["sltn", "gali", "sdrf", "pasx", "anti"]
+names = ["sltn", "gali", "sdrf", "pasx", "anti", "komi", "fot"]
 fig, axs = plt.subplots(5, 2)
 n = 0
 for name in names:
