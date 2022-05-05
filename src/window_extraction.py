@@ -1,4 +1,37 @@
 from filterfuncs import *
+import random as rand
+
+def rand_rot(theta):
+	Ry = np.array([
+		[np.cos(theta), 0, np.sin(theta)],
+		[0, 1, 0],
+		[-np.sin(theta), 0, np.cos(theta)]
+	])
+	Rz = np.array([
+		[np.cos(theta), -np.sin(theta), 0],
+		[np.sin(theta), np.cos(theta), 0],
+		[0, 0, 1]
+	])
+
+	r = rand.randint(1, 4)
+	if r == 1:
+		R = Ry
+	elif r == 2:
+		R = Rz
+	elif r == 3:
+		R = np.dot(Ry,Rz)
+	elif r == 4:
+		R = np.dot(Rz,Ry)
+
+	# print(f'{np.dot(Ry,Rz)}\n\n{np.dot(Rz,Ry)}\n')
+
+	# zer = np.zeros( (3, 3) )
+	# Q1 = np.vstack( (R, zer) )
+	# Q2 = np.vstack( (zer, R) )
+	# Q = np.hstack( (Q1, Q2) )
+	# print(Q)
+
+	return R
 
 def plot_spks(acc_spk_cont, acc_spk_wide, ang_spk_cont, ang_spk_wide):
 	fig, axs = plt.subplots(2, 2)
@@ -29,8 +62,8 @@ def plot_spk_tmlen(datafr, measurements):
 		plt.axvline(x=measurement, linestyle='--', linewidth=2, label='{0} at {1}'.format(name, measurement), c=color)
 	plt.legend()
 
-def plot_spk_analysis():
-	spk_time, acc_spk_c, acc_spk_w, ang_spk_c, ang_spk_w = spike_signals('all')
+def plot_spk_analysis(names):
+	spk_time, acc_spk_c, acc_spk_w, ang_spk_c, ang_spk_w = concatenate_signals('all', names)
 
 	df = pd.DataFrame(spk_time, columns = list(['tlngth']))
 	mode_spk_len = round(df['tlngth'].mode().iloc[0], 2)
@@ -50,7 +83,9 @@ def plot_spk_analysis():
 ## Plot All-Spikes Analysis:
 # plot_spk_analysis()
 
-spikes = pd.DataFrame(spike_signals('spk'), columns = list(['timelen']))
+names = ['sltn', 'sdrf']
+spk_len, nspks = concatenate_signals('spk', names)
+spikes = pd.DataFrame(spk_len, columns = list(['timelen']))
 max_spk_len = round(spikes['timelen'].max(), 3)
 ## Window_length = maximum spike length of all athlets + offset
 ## For the case of a better athlete (higher jump), we add a constant offset
@@ -65,7 +100,7 @@ wd_smpl_len = ceil(wd_time_len * 64)	# samples
 ##     (ii) step = 1               (samples) -> N "spike-window-parts" inside current window
 
 name = 'sdrf'
-spks, _, acc, _, _, ang, _, _ = filtering(name)
+_, spks, _, acc, _, _, ang, _, _ = filtering(name)
 s_tot = ceil(len(acc[:, 0]))
 ## The maximum length of windows = total samples
 ## Each window will contain wd_smpl_len samples
@@ -84,10 +119,11 @@ s = 0
 acc_temp = np.vstack( ( acc, np.zeros([62, 3]) ) )
 # print(np.shape(acc_temp), np.shape(acc))
 
+Qz = rand_rot(np.round(np.random.normal(loc=0.0, scale=10, size = None), 3))
 loot = []
 while s <= s_tot:
 	ls = s + wd_smpl_len
-	wds[i, :, :] = acc_temp[s:ls, :]
+	wds[i, :, :] = np.transpose( np.dot(Qz, np.transpose(acc_temp[s:ls, :])))
 
 	## Check_001
 	# print((s, ls), np.shape(acc)[0])
@@ -134,7 +170,7 @@ while wds[-c, :, :].any() == zer.any():
 wds = wds[1:-c-1, :, :]
 print(c)
 
-## -Plot last wds and acc tuples-
+## -Plot last wds and acc tuples-  **wds are rotated
 fig, axs = plt.subplots(2)
 axs[0].plot(acc[-66:, :])
 axs[1].plot(wds[-1, :, :])
