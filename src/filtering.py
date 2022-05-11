@@ -125,7 +125,7 @@ def plot_spikes(spks_signal, spks_spaces):
 
 ## Initialization:
 # (1) Input:
-names = ["gali", "sdrf", "sltn", "pasx", "anti"]
+names = ["gali", "sdrf", "sltn", "pasx", "anti", "komi", "fot"]
 name = names[4]
 acc, ang, t, spk, blk, srv = read_data(name)
 # (2) Calculations:

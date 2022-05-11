@@ -152,11 +152,11 @@ def base_stats(names):
 	spks, nspks = concatenate_signals('spk', names)
 	spks = np.array(spks)
 
-	print(f'# Total spikes = {np.sum(nspks, dtype = np.int32)}')
+	print(f'\n# Spikes per subject:')
 	for i in np.arange(len(names)):
 		print(f'  Subject_0{i+1}: {names[i]} = {int(nspks[i])}')
-	print(f'\n#  Max = {spks.max():.3f}  #  Min = {spks.min():.3f}')
-	print(f'# Mean = {spks.mean():.3f}  #  Std = {spks.std():.3f}')
+	print(f'\n# Total_spikes = {np.sum(nspks, dtype = np.int32)} #  Max = {spks.max():.3f}  #  Min = {spks.min():.3f}')
+	print(f'#    Mean = {spks.mean():.3f}    #  Std = {spks.std():.3f}  #  Median = {np.median(spks):.3f}')
 
 def window_length(names):
 	spks, _ = concatenate_signals('spk', names)
