@@ -7,6 +7,8 @@ import pickle as pkl
 import matplotlib.pyplot as plt
 from scipy.signal import lfilter, freqz, filtfilt, butter
 from tkinter.font import BOLD
+from filterfuncs import window_length
+from copy import deepcopy
 
 class recording:
 
@@ -24,6 +26,25 @@ class recording:
 		self.windows = None
 		self.labels = None
 		self.timestamps = None
+
+	def set_signals(self, racc, rang, t, spks, facc, fang):
+		self.raw_acc = racc
+		self.raw_ang = rang
+		self.t = t
+		self.spikes = spks
+		self.filt_acc = facc
+		self.filt_ang = fang
+
+	def set_windows(self, wds, lbls, tmst):
+		self.windows = wds
+		self.labels = lbls
+		self.timestamps = tmst
+
+	def copy(self):
+		q = recording(self.name, self.tag)
+		q.set_signals(self.raw_acc, self.raw_ang, self.t, self.spikes, self.filt_acc, self.filt_ang)
+		q.set_windows(self.windows, self.labels, self.timestamps)
+		return q
 
 	def read_data(self):
 		p = os.path.dirname(os.getcwd())
@@ -129,8 +150,8 @@ class recording:
 		## The maximum length of windows = total samples
 		## Each window will contain wd_smpl_len samples
 		wds = np.zeros([s_tot, wd_smpl_len, 6])
-		labels = wds[:, 0, 0].copy()
-		timestamps = labels.copy()
+		labels = deepcopy(wds[:, 0, 0])
+		timestamps = deepcopy(labels)
 		acc_temp = np.vstack( ( acc, np.zeros([62, 3]) ) )
 		ang_temp = np.vstack( ( ang, np.zeros([62, 3]) ) )
 		i = 0
@@ -139,8 +160,8 @@ class recording:
 
 		while s <= s_tot:
 			ls = s + wd_smpl_len
-			wds[i, :, 0:3] = acc_temp[s:ls, :]
-			wds[i, :, 3:] = ang_temp[s:ls, :]
+			wds[i, :, 0:3] = deepcopy(acc_temp[s:ls, :])
+			wds[i, :, 3:] = deepcopy(ang_temp[s:ls, :])
 			timestamps[i] = s / 64
 			step, labels[i] = self.find_step_and_label(spks, j, wd_smpl_len, s)
 			
@@ -148,15 +169,145 @@ class recording:
 			s = s + step
 
 		## Finding the unused slots in the rear of wds
-		zer = np.zeros([65, 3])
+		zer = np.zeros([wd_smpl_len, 3])
 		c = 1
 		while wds[-c, :, :].any() == zer.any():
 			c += 1
 
 		## We exclude the last window, losing a constructed non-spike
 		## window (mixed signal-tuples with zero-tuples)
-		wds = wds[1:-c-1, :, :]
-		labels = labels[1:-c-1]
-		self.windows = wds
-		self.labels = labels
-		self.timestamps = timestamps
+		wds = wds[1:-c, :, :]
+		labels = labels[1:-c]
+		self.windows = deepcopy(wds)
+
+		# fig, axs = plt.subplots(2)
+		# axs[0].plot(acc[-44:, :])
+		# axs[1].plot(self.windows[-1, :, 0:3])
+		# plt.show()
+
+		self.labels = deepcopy(labels)
+		self.timestamps = deepcopy(timestamps)
+
+	def extend_windows(self, extra, n):
+		self.windows = np.append(self.windows, extra, axis=0)
+		self.labels  = np.append(self.labels, np.ones(n, dtype=np.int16))
+
+# collect all subjects in an object:
+def subj_tot(names):
+	print(f'\n# Before augmentation:')
+	wd_smpl_len = window_length(names)
+	# print(wd_smpl_len)
+	subjects = list()
+	ns = list()
+	po = list()
+	ne = list()
+	pos = 0
+	neg = 0
+	for i in np.arange(len(names)):
+		n = names[i]
+		if i < 10:
+			t = '0' + str(i+1)
+		else:
+			t = str(i+1)
+		subjects.append(recording(name = n, tag = t))
+
+		subjects[i].read_data()
+		subjects[i].filtering()
+
+		# print(f'{np.shape(subjects[i].filt_acc)}')
+		subjects[i].windowing(subjects[i].filt_acc, subjects[i].filt_ang, subjects[i].spikes, wd_smpl_len)
+
+		unique, counts = np.unique(subjects[i].labels, return_counts=True)
+		d = dict(zip(unique, counts))
+		print(f'\n  Subject_{subjects[i].tag}:')
+		print(f'    Negative windows: {d[0.0]}')
+		print(f'    Positive windows: {d[1.0]}')
+		neg += d[0.0]
+		pos += d[1.0]
+		ne.append(d[0.0])
+		po.append(d[1.0])
+		ns.append(d[0.0]//d[1.0])
+
+	print(f'\n  Total:\n    Positives = {pos}\n    Negatives = {neg}')
+	return subjects, ns, po, ne
+
+## Positive class augmentation:
+def rand_rot(theta):
+	Ry = np.array([
+		[np.cos(theta), 0, np.sin(theta)],
+		[0, 1, 0],
+		[-np.sin(theta), 0, np.cos(theta)]
+	])
+	Rz = np.array([
+		[np.cos(theta), -np.sin(theta), 0],
+		[np.sin(theta), np.cos(theta), 0],
+		[0, 0, 1]
+	])
+
+	#working properly (?)
+	# Rz = np.array([
+	# 	[np.cos(theta), np.sin(theta), 0],
+	# 	[-np.sin(theta), np.cos(theta), 0],
+	# 	[0, 0, 1]
+	# ])
+
+	r = rand.randint(1, 4)
+	if r == 1:
+		R = Ry
+	elif r == 2:
+		R = Rz
+	elif r == 3:
+		R = np.dot(Ry,Rz)
+	elif r == 4:
+		R = np.dot(Rz,Ry)
+
+	# print(f'{np.dot(Ry,Rz)}\n\n{np.dot(Rz,Ry)}\n')
+
+	zer = np.zeros( (3, 3) )
+	Q1 = np.vstack( (R, zer) )
+	Q2 = np.vstack( (zer, R) )
+	Q = np.hstack( (Q1, Q2) )
+	# print(Q)
+
+	return Q
+
+def balance_windows(subjects, ns, posi, neg):
+	newsubj = deepcopy(subjects)
+	s_ind = 0
+	for s, n, pos, neg in zip(subjects, ns, posi, neg):
+		lst = np.round(np.random.normal(loc=0.0, scale=10, size = n), 3)
+		ind = np.transpose( np.nonzero(s.labels) )
+		d1, d2, d3 = np.shape(s.windows)
+		temp = np.empty( [n*pos, d2, d3] )
+		j = 0
+		for theta in lst:
+			# theta = np.pi/2
+			Q = rand_rot(theta)
+			for i in ind:
+				## (i)  Counter-Clockwise rotation:
+				temp[j] = np.dot(np.squeeze(s.windows[i, :, :]), Q)
+
+				## (ii) Clockwise rotation:
+				# temp[j] = np.transpose( np.dot(Q, np.squeeze(np.transpose(s.windows[i, :, :])) ) )
+				
+				j += 1
+
+		# print(f'Before: {np.shape(newsubj[s_ind].windows)}')
+		newsubj[s_ind].extend_windows(temp, n*pos)
+		s_ind += 1
+		# print(f'After: {np.shape(newsubj[s_ind-1].windows)}')
+
+	print(f'\n# After augmentation:')
+	neg = 0
+	pos = 0
+	for nsj in newsubj:
+		unique, counts = np.unique(nsj.labels, return_counts=True)
+		d = dict(zip(unique, counts))
+		print(f'\n  Subject_{nsj.tag}:')
+		print(f'    Negative windows: {d[0.0]}')
+		print(f'    Positive windows: {d[1.0]}')
+		neg += d[0.0]
+		pos += d[1.0]
+	
+	print(f'\n  Total:\n    Positives = {pos}\n    Negatives = {neg}')
+	return newsubj, ind
