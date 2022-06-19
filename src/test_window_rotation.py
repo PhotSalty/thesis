@@ -87,10 +87,10 @@ for s, n, posi, neg in zip(subjects, ns, po, ne):
 		Q = rand_rot(theta)
 		for i in ind:
 			## (i)  Counter-Clockwise rotation:
-			temp[j] = np.dot(np.squeeze(s.windows[i, :, :]), Q)
+			# temp[j] = np.dot(np.squeeze(s.windows[i, :, :]), Q)
 
 			## (ii) Clockwise rotation:
-			# temp[j] = np.transpose( np.dot(Q, np.squeeze(np.transpose(s.windows[i, :, :])) ) )
+			temp[j] = np.transpose( np.dot(Q, np.squeeze(np.transpose(s.windows[i, :, :])) ) )
 			
 			j += 1
 

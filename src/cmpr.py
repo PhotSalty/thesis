@@ -43,13 +43,15 @@ def data_load(name):
 	return spks, acc, ang
 
 
-names = ["sltn", "gali", "sdrf", "pasx", "anti", "komi", "fot"]
-fig, axs = plt.subplots(5, 2)
+names = ["sltn", "gali", "sdrf", "pasx", "anti", "komi", "fot", "agge", "conp"]
+names = ["gali", "agge", "conp"]
+
+fig, axs = plt.subplots(np.shape(names)[0], 2)
 n = 0
 for name in names:
 	spikes, acc, ang = data_load(name)
 	dat = [acc, ang]
-	a = 9 #np.random.randint(len(spikes))
+	a = 19 #np.random.randint(len(spikes))
 	sf = [int(spikes[a, 0] - 400), int(spikes[a, 1] + 400)]
 	sf1 = [int(spikes[a, 0]), int(spikes[a, 1])]
 	pltit(n)

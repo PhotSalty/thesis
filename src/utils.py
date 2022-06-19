@@ -22,6 +22,10 @@ class recording:
 		self.spikes = None
 		self.filt_acc = None
 		self.filt_ang = None
+		if name.find('LH') == -1:
+			self.left_hand = True
+		else:
+			self.left_hand = False	#default
 
 		self.windows = None
 		self.labels = None
@@ -78,6 +82,11 @@ class recording:
 		spks[:, 0] = np.round(spks[:, 0])
 		spks[:, 1] = np.ceil(spks[:, 1])
 		
+		# Hand mirroring for left-handed subjects. Converting their 
+		# spike signals to an identical right-handed subject's signal
+		if self.left_hand:
+			acc, ang = hand_mirroring_signals(acc, ang)
+
 		self.t = t
 		self.raw_acc = acc
 		self.raw_ang = ang
@@ -178,6 +187,7 @@ class recording:
 		## window (mixed signal-tuples with zero-tuples)
 		wds = wds[1:-c, :, :]
 		labels = labels[1:-c]
+		timestamps = timestamps[1:-c]
 		self.windows = deepcopy(wds)
 
 		# fig, axs = plt.subplots(2)
@@ -191,6 +201,10 @@ class recording:
 	def extend_windows(self, extra, n):
 		self.windows = np.append(self.windows, extra, axis=0)
 		self.labels  = np.append(self.labels, np.ones(n, dtype=np.int16))
+		self.timestamps = np.append(self.timestamps, np.zeros(n, dtype=np.float64))
+
+
+
 
 # collect all subjects in an object:
 def subj_tot(names):
@@ -227,9 +241,46 @@ def subj_tot(names):
 		ne.append(d[0.0])
 		po.append(d[1.0])
 		ns.append(d[0.0]//d[1.0])
+		# ns.append(d[0.0]/d[1.0])
 
 	print(f'\n  Total:\n    Positives = {pos}\n    Negatives = {neg}')
 	return subjects, ns, po, ne
+
+
+# input: all windows -> (100.000 windows, 48 samples, 6 sensors)
+# output: mean and std for each sensor
+def standardization_parameters(windows):
+
+# Equal Method for extracting means and std:
+#	Instead of separated-windows array of (100.000, 48, 6),
+#	we create the merged-windows array of (100.000*48, 6):
+	
+	# d1, d2, d3 = np.shape(windows)
+	# nwds = np.empty([d1*d2, d3], dtype = np.float64)
+	# for i in np.arange(windows.shape[0]):
+	# 	nwds[ i*d2 : (i+1)*d2, : ] = windows[i, :, :]
+	
+	# means = np.mean(nwds, axis = 0)
+	# stds = np.std(nwds, axis = 0)
+
+# Without merging windows: (Equal method for means, stds)
+	means = np.mean(windows, axis = (0,1))
+	stds = np.std(windows, axis = (0,1))
+	
+	return means, stds
+
+
+def apply_stadardization(windows, means, stds):
+	a = deepcopy(windows)
+	for i in np.arange(windows.shape[2]):
+		windows[:, :, i] = (windows[:, :, i] - means[i]) / stds[i]
+
+	# print(f'{np.mean(windows, axis = (0,1))}')
+	# print(np.std(windows, axis = (0,1)))
+	# print(f'Original means: {means}')
+	# print(f'Original stds: {stds}')
+	return windows
+
 
 ## Positive class augmentation:
 def rand_rot(theta):
@@ -243,13 +294,6 @@ def rand_rot(theta):
 		[np.sin(theta), np.cos(theta), 0],
 		[0, 0, 1]
 	])
-
-	#working properly (?)
-	# Rz = np.array([
-	# 	[np.cos(theta), np.sin(theta), 0],
-	# 	[-np.sin(theta), np.cos(theta), 0],
-	# 	[0, 0, 1]
-	# ])
 
 	r = rand.randint(1, 4)
 	if r == 1:
@@ -271,14 +315,16 @@ def rand_rot(theta):
 
 	return Q
 
+
+## Spikes-augmentation: Balance negative and positive class
 def balance_windows(subjects, ns, posi, neg):
 	newsubj = deepcopy(subjects)
 	s_ind = 0
 	for s, n, pos, neg in zip(subjects, ns, posi, neg):
-		lst = np.round(np.random.normal(loc=0.0, scale=10, size = n), 3)
+		lst = np.round(np.random.normal(loc=0.0, scale=10, size = n+1), 3)
 		ind = np.transpose( np.nonzero(s.labels) )
-		d1, d2, d3 = np.shape(s.windows)
-		temp = np.empty( [n*pos, d2, d3] )
+		_, d2, d3 = np.shape(s.windows)
+		temp = np.empty( [(n+1)*pos, d2, d3] )
 		j = 0
 		for theta in lst:
 			# theta = np.pi/2
@@ -292,8 +338,11 @@ def balance_windows(subjects, ns, posi, neg):
 				
 				j += 1
 
+		aug_end = neg - pos
+		temp = temp[:aug_end, :, :]
 		# print(f'Before: {np.shape(newsubj[s_ind].windows)}')
-		newsubj[s_ind].extend_windows(temp, n*pos)
+		# newsubj[s_ind].extend_windows(temp, n*pos)
+		newsubj[s_ind].extend_windows(temp, aug_end)
 		s_ind += 1
 		# print(f'After: {np.shape(newsubj[s_ind-1].windows)}')
 
@@ -311,3 +360,34 @@ def balance_windows(subjects, ns, posi, neg):
 	
 	print(f'\n  Total:\n    Positives = {pos}\n    Negatives = {neg}')
 	return newsubj, ind
+
+
+## Hand mirroring methods:
+def hand_mirroring_signals(acc, ang):
+	B = np.array([
+		[-1, 0, 0],
+		[0, 1, 0],
+		[0, 0, 1]
+	])
+
+	acc = acc @ B
+	ang = ang @ B
+
+	return acc, ang
+	
+def hand_mirroring_windows(wds):
+	B = np.array([
+		[-1, 0, 0, 0, 0, 0],
+		[0, 1, 0, 0, 0, 0],
+		[0, 0, 1, 0, 0, 0],
+		[0, 0, 0, -1, 0, 0],
+		[0, 0, 0, 0, 1, 0],
+		[0, 0, 0, 0, 0, 1]
+	])
+
+	b = wds @ B
+	
+	if np.array_equal(b.shape, wds.shape):
+		return b
+	else:
+		print("Error on shape!")
