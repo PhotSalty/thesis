@@ -9,6 +9,9 @@ from scipy.signal import lfilter, freqz, filtfilt, butter
 from tkinter.font import BOLD
 from filterfuncs import window_length
 from copy import deepcopy
+import sys
+
+sls = sys.argv[1]
 
 class recording:
 
@@ -52,8 +55,8 @@ class recording:
 
 	def read_data(self):
 		p = os.path.dirname(os.getcwd())
-		p1 = p + '\\data\\pickled_data\\'
-		p2 = p + '\\data\\recordings\\'
+		p1 = p + sls + 'data' + sls + 'pickled_data' + sls
+		p2 = p + sls + 'data' + sls + 'recordings' + sls
 		datap = p1 + self.name + ".pkl"
 		
 		with open(datap, 'rb') as f:

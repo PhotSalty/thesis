@@ -3,6 +3,9 @@ import pickle as pkl
 import matplotlib.pyplot as plt
 import os
 from utils import set_ubuntu_slash
+import sys
+
+sls = sys.argv[1]
 
 def pltit(i): # , axs, fotis_hits, acc):
 	for j in [0,1]:
@@ -22,8 +25,7 @@ def pltit(i): # , axs, fotis_hits, acc):
 def data_load(name):
 	p = os.path.dirname(os.getcwd())
 
-	sls = '\\'
-	# sls = set_ubuntu_slash()
+	# sls = set_ubuntu_slash(sys.argv[0])
 	
 	n = p + sls + 'data' + sls
 	# n = "C:\\Users\\30698\\Thesis_Fotis\\thesis\\data\\"

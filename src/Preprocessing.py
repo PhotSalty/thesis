@@ -1,6 +1,9 @@
 from sys import getsizeof
 from utils import *
 from filterfuncs import *
+import sys
+
+sls = sys.argv[1]
 
 names = ['sltn', 'sdrf', 'gali', 'pasx', 'anti', 'komi', 'fot']
 # names = ['sltn', 'sdrf']
@@ -36,9 +39,6 @@ for i in np.arange(len(newsubj))[1:]:
 
 
 p = os.path.dirname(os.getcwd())
-
-sls = '\\'
-# sls = set_ubuntu_slash()
 
 p1 = p + sls + 'data' + sls + 'pickle_output' + sls
 datap = p1 + 'full_data' + '.pkl'
