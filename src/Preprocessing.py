@@ -36,7 +36,11 @@ for i in np.arange(len(newsubj))[1:]:
 
 
 p = os.path.dirname(os.getcwd())
-p1 = p + '\\data\\pickle_output\\'
+
+sls = '\\'
+# sls = set_ubuntu_slash()
+
+p1 = p + sls + 'data' + sls + 'pickle_output' + sls
 datap = p1 + 'full_data' + '.pkl'
 # datap = 'full_data.pkl'
 with open(datap, 'wb') as f:

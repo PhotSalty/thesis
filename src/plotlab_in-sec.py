@@ -2,6 +2,7 @@ import numpy as np
 import pickle as pkl
 import matplotlib.pyplot as plt
 import os
+from utils import set_ubuntu_slash
 
 def labeling(dat, k, sbsr):
 	#axs[k].step(np.arange(start = 1000, stop = 1400), dat[1000:1400], lw=.5)
@@ -35,7 +36,10 @@ names = ["gali", "sdrf", "sltn", "pasx", "anti", "komi", "fot", "agge", "conp"]
 name = names[8]
 
 p = os.path.dirname(os.getcwd())
-p1 = p + '\\data\\pickled_data\\'
+sls = '\\'
+# sls = set_ubuntu_slash()
+
+p1 = p + sls + 'data' + sls + 'pickled_data' + sls
 datap = p1 + name + ".pkl"
 
 with open(datap, 'rb') as f:
@@ -45,7 +49,8 @@ spikes = data[0]
 blocks = data[1]
 services = data[2]
 
-p2 = p + '\\data\\recordings\\'
+p2 = p + sls + 'data' + sls + 'recordings' + sls
+
 datar = p2 + name
 data1 = np.fromfile(datar+"acc.bin", dtype=np.int16, sep='')
 data2 = np.fromfile(datar+"angularrate.bin", dtype=np.int16, sep='')
