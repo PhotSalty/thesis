@@ -16,7 +16,7 @@
 from filterfuncs import base_stats
 from utils import *
 
-names = ["sltn", "gali", "sdrf", "pasx", "anti", "komi", "fot", "agge", "conp"]
+names = ["sltn", "gali", "sdrf", "pasx", "anti", "komi", "fot", "agge", "conp", "LH_galios"]
 # names = ['sltn', 'sdrf']
 
 # Print full-base statistics:

@@ -47,8 +47,8 @@ def labeling(dat, k, sbsr):
 	# axs[0].set_ylabel("g")
 	# axs[0].set_title("Accelerators 3D")
 
-names = ["gali", "sdrf", "sltn", "pasx", "anti", "komi", "fot", "agge", "conp"]
-name = names[8]
+names = ["gali", "sdrf", "sltn", "pasx", "anti", "komi", "fot", "agge", "conp", "LH_galios"]
+name = names[9]
 
 p = os.path.dirname(os.getcwd())
 
@@ -73,6 +73,10 @@ ang = data2.reshape(len(data2)//3, 3)
 
 acc = acc * 0.0004
 ang = ang * 0.07
+
+if name.find('LH') != -1:
+	print("left handed subject detected")
+	acc, ang = hand_mirroring_signals(acc, ang)
 
 # Spikes has 4 columns:
 # arm-swing, last ground contact, first ground contact, 2 feet on the ground

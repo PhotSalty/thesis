@@ -34,9 +34,9 @@ class recording:
 		self.filt_acc = None
 		self.filt_ang = None
 		if name.find('LH') == -1:
-			self.left_hand = True
+			self.left_hand = False  #default
 		else:
-			self.left_hand = False	#default
+			self.left_hand = True
 
 		self.windows = None
 		self.labels = None
