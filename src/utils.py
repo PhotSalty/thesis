@@ -392,7 +392,5 @@ def hand_mirroring_windows(wds):
 	else:
 		print("Error on shape!")
 
-
-def ubuntu_path(str):
-	str.replace('\\', '/')
-	return str
+def set_ubuntu_slash():
+	return '/'

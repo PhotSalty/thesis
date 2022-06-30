@@ -2,7 +2,7 @@ import numpy as np
 import pickle as pkl
 import matplotlib.pyplot as plt
 import os
-from utils import ubuntu_path
+from utils import set_ubuntu_slash
 
 def pltit(i): # , axs, fotis_hits, acc):
 	for j in [0,1]:
@@ -21,18 +21,15 @@ def pltit(i): # , axs, fotis_hits, acc):
 
 def data_load(name):
 	p = os.path.dirname(os.getcwd())
-	n = p + '\\data\\'
+
+	sls = '\\'
+	# sls = set_ubuntu_slash()
+	
+	n = p + sls + 'data' + sls
 	# n = "C:\\Users\\30698\\Thesis_Fotis\\thesis\\data\\"
-	datap = n + "pickled_data\\" + name + ".pkl"
-	flacc = n + "recordings\\" + name + "acc.bin"
-	flang = n + "recordings\\" + name + "angularrate.bin"
-
-
-	flag = False
-	if flag:
-		datap = ubuntu_path(datap)
-		flacc = ubuntu_path(flacc)
-		flang = ubuntu_path(flang)
+	datap = n + 'pickled_data' + sls + name + ".pkl"
+	flacc = n + "recordings" + sls + name + "acc.bin"
+	flang = n + "recordings" + sls + name + "angularrate.bin"
 
 	with open(datap, 'rb') as f:
 		data = pkl.load(f)
