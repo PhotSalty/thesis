@@ -1,6 +1,7 @@
 import numpy as np
 import pickle as pkl
 import matplotlib.pyplot as plt
+import os
 
 def labeling(dat, k, sbsr):
 	#axs[k].step(np.arange(start = 1000, stop = 1400), dat[1000:1400], lw=.5)
@@ -32,7 +33,10 @@ def labeling(dat, k, sbsr):
 
 names = ["gali", "sdrf", "sltn", "pasx", "anti", "komi", "fot", "agge", "conp"]
 name = names[8]
-datap = "C:\\Users\\30698\\Thesis_Fotis\\thesis\\data\\pickled_data\\" + name + ".pkl"
+
+p = os.path.dirname(os.getcwd())
+p1 = p + '\\data\\pickled_data\\'
+datap = p1 + name + ".pkl"
 
 with open(datap, 'rb') as f:
 	data = pkl.load(f)
@@ -41,7 +45,8 @@ spikes = data[0]
 blocks = data[1]
 services = data[2]
 
-datar = "C:\\Users\\30698\\Thesis_Fotis\\thesis\\data\\recordings\\" + name
+p2 = p + '\\data\\recordings\\'
+datar = p2 + name
 data1 = np.fromfile(datar+"acc.bin", dtype=np.int16, sep='')
 data2 = np.fromfile(datar+"angularrate.bin", dtype=np.int16, sep='')
 
