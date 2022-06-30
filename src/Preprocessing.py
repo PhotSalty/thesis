@@ -13,8 +13,8 @@
 # import sys
 # sls = sys.argv[1]
 
-from filterfuncs import *
-# from utils import *
+from filterfuncs import base_stats
+from utils import *
 
 names = ['sltn', 'sdrf', 'gali', 'pasx', 'anti', 'komi', 'fot']
 # names = ['sltn', 'sdrf']
