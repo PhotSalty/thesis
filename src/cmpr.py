@@ -3,7 +3,7 @@ import pickle as pkl
 import os
 from utils import set_ubuntu_slash
 import sys
-if sys.argv[1] == 1:
+if int(sys.argv[1]) == 1:
 	import matplotlib
 	matplotlib.use('TkAgg')
 	from matplotlib import pyplot as plt
