@@ -16,7 +16,7 @@ def read_data(name, sls):
 	p1 = p + sls + 'data' + sls + 'pickled_data' + sls
 	p2 = p + sls + 'data' + sls + 'recordings' + sls
 	datap = p1 + name + ".pkl"
-	datap = "C:\\Users\\30698\\Thesis_Fotis\\thesis\\data\\pickled_data\\" + name + ".pkl"
+	# datap = "C:\\Users\\30698\\Thesis_Fotis\\thesis\\data\\pickled_data\\" + name + ".pkl"
 	
 	with open(datap, 'rb') as f:
 		data = pkl.load(f)
@@ -25,7 +25,8 @@ def read_data(name, sls):
 	blocks = data[1]
 	services = data[2]
 
-	datar = "C:\\Users\\30698\\Thesis_Fotis\\thesis\\data\\recordings\\" + name
+	datar = p2 + name
+	# datar = "C:\\Users\\30698\\Thesis_Fotis\\thesis\\data\\recordings\\" + name
 	data1 = np.fromfile(datar+"acc.bin", dtype=np.int16, sep='')
 	data2 = np.fromfile(datar+"angularrate.bin", dtype=np.int16, sep='')
 
