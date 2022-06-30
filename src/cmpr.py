@@ -2,6 +2,7 @@ import numpy as np
 import pickle as pkl
 import matplotlib.pyplot as plt
 import os
+from utils import ubuntu_path
 
 def pltit(i): # , axs, fotis_hits, acc):
 	for j in [0,1]:
@@ -20,11 +21,19 @@ def pltit(i): # , axs, fotis_hits, acc):
 
 def data_load(name):
 	p = os.path.dirname(os.getcwd())
-	n = p + '\\data'
+	n = p + '\\data\\'
 	# n = "C:\\Users\\30698\\Thesis_Fotis\\thesis\\data\\"
 	datap = n + "pickled_data\\" + name + ".pkl"
 	flacc = n + "recordings\\" + name + "acc.bin"
 	flang = n + "recordings\\" + name + "angularrate.bin"
+
+
+	flag = False
+	if flag:
+		datap = ubuntu_path(datap)
+		flacc = ubuntu_path(flacc)
+		flang = ubuntu_path(flang)
+
 	with open(datap, 'rb') as f:
 		data = pkl.load(f)
 
