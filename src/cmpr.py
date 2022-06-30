@@ -8,6 +8,7 @@ if sys.argv[1] == 1:
 	matplotlib.use('TkAgg')
 	from matplotlib import pyplot as plt
 	sls = '/'
+	print('We are in Ubuntu!')
 else:
 	import matplotlib.pyplot as plt
 	sls = '\\'
