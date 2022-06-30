@@ -1,11 +1,18 @@
 import numpy as np
 import pickle as pkl
-import matplotlib.pyplot as plt
 import os
 from utils import set_ubuntu_slash
 import sys
+if sys.argv[1] == 1:
+	import matplotlib
+	matplotlib.use('TkAgg')
+	from matplotlib import pyplot as plt
+	sls = '/'
+else:
+	import matplotlib.pyplot as plt
+	sls = '\\'
 
-sls = sys.argv[1]
+# sls = sys.argv[1]
 
 def pltit(i): # , axs, fotis_hits, acc):
 	for j in [0,1]:
