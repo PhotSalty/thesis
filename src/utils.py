@@ -220,7 +220,7 @@ class recording:
 # collect all subjects in an object:
 def subj_tot(names):
 	print(f'\n# Before augmentation:')
-	wd_smpl_len = window_length(names)
+	wd_smpl_len = window_length(names, sls)
 	# print(wd_smpl_len)
 	subjects = list()
 	ns = list()

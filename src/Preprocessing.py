@@ -20,7 +20,7 @@ names = ['sltn', 'sdrf', 'gali', 'pasx', 'anti', 'komi', 'fot']
 # names = ['sltn', 'sdrf']
 
 # Print full-base statistics:
-base_stats(names)
+base_stats(names, sls)
 
 # Concatenate subjects:
 subjects, ns, po, ne = subj_tot(names)

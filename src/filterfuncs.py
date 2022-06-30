@@ -6,11 +6,16 @@ import pickle as pkl
 # import matplotlib.pyplot as plt
 from scipy.signal import lfilter, freqz, filtfilt, butter
 from tkinter.font import BOLD
+import os
 # from utils import *
 import matplotlib.pyplot as plt
 
 ## Functions:
-def read_data(name):
+def read_data(name, sls):
+	p = os.path.dirname(os.getcwd())
+	p1 = p + sls + 'data' + sls + 'pickled_data' + sls
+	p2 = p + sls + 'data' + sls + 'recordings' + sls
+	datap = p1 + name + ".pkl"
 	datap = "C:\\Users\\30698\\Thesis_Fotis\\thesis\\data\\pickled_data\\" + name + ".pkl"
 	
 	with open(datap, 'rb') as f:
@@ -67,8 +72,8 @@ def hp_filter(signal, fs):
 	
 	return y1
 
-def filtering(name):
-	acc, ang, t, spk, blk, srv = read_data(name)
+def filtering(name, sls):
+	acc, ang, t, spk, blk, srv = read_data(name, sls)
 	# (2) Calculations:
 	spk_dif = spk[:,1] - spk[:,0]
 	nspk, _ = np.shape(spk)
@@ -118,7 +123,7 @@ def extract_spikes_signal(signal, spikes):
 	spks_spaces = spks_spaces[0:j, :]
 	return spks_signal, spks_spaces
 
-def concatenate_signals(mode, names):
+def concatenate_signals(mode, names, sls):
 	# names = np.array(["gali", "sdrf", "sltn", "pasx", "anti", "komi", "fot"])
 	spk_len   = list()
 	acc_spk_c = list()
@@ -130,7 +135,7 @@ def concatenate_signals(mode, names):
 
 	#return order: spk_dif, facc, acc_spk_cont, acc_spk_wide, fang, ang_spk_cont, ang_spk_wide
 	for name in names:
-		nspk, _, dif, _, a, b, _, c, d = filtering(name)
+		nspk, _, dif, _, a, b, _, c, d = filtering(name, sls)
 		nspks[i] = nspk
 		i += 1
 		spk_len.extend(dif)
@@ -150,8 +155,8 @@ def concatenate_signals(mode, names):
 	else:
 		print("Error: Wrong mode")
 
-def base_stats(names):
-	spks, nspks = concatenate_signals('spk', names)
+def base_stats(names, sls):
+	spks, nspks = concatenate_signals('spk', names, sls)
 	spks = np.array(spks)
 
 	print(f'\n# Spikes per subject:')
@@ -160,8 +165,8 @@ def base_stats(names):
 	print(f'\n# Total_spikes = {np.sum(nspks, dtype = np.int32)} #  Max = {spks.max():.3f}  #  Min = {spks.min():.3f}')
 	print(f'#    Mean = {spks.mean():.3f}    #  Std = {spks.std():.3f}  #  Median = {np.median(spks):.3f}')
 
-def window_length(names):
-	spks, _ = concatenate_signals('spk', names)
+def window_length(names, sls):
+	spks, _ = concatenate_signals('spk', names, sls)
 	spikes = pd.DataFrame(spks, columns = list(['timelen']))
 	mean_spk_len = round(spikes['timelen'].mean(), 3)
 	## Window_length = mean spike length of all athlets + offset
