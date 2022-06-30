@@ -69,6 +69,7 @@ for name in names:
 
 plt.show()
 
+
 # print(np.where(acc[1] == np.amax(acc[1])))
 #print(np.amax(acc[:,0]), np.amax(acc[:,1]), np.amax(acc[:,2]))
 
