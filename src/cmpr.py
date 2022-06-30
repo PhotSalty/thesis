@@ -1,6 +1,7 @@
 import numpy as np
 import pickle as pkl
 import matplotlib.pyplot as plt
+import os
 
 def pltit(i): # , axs, fotis_hits, acc):
 	for j in [0,1]:
@@ -18,7 +19,9 @@ def pltit(i): # , axs, fotis_hits, acc):
 		axs[i][j].legend(["X","Y","Z"])
 
 def data_load(name):
-	n = "C:\\Users\\30698\\Thesis_Fotis\\thesis\\data\\"
+	p = os.path.dirname(os.getcwd())
+	n = p + '\\data'
+	# n = "C:\\Users\\30698\\Thesis_Fotis\\thesis\\data\\"
 	datap = n + "pickled_data\\" + name + ".pkl"
 	flacc = n + "recordings\\" + name + "acc.bin"
 	flang = n + "recordings\\" + name + "angularrate.bin"
@@ -44,14 +47,14 @@ def data_load(name):
 
 
 names = ["sltn", "gali", "sdrf", "pasx", "anti", "komi", "fot", "agge", "conp"]
-names = ["gali", "agge", "conp"]
+names = ["sdrf", "agge", "conp"]
 
 fig, axs = plt.subplots(np.shape(names)[0], 2)
 n = 0
 for name in names:
 	spikes, acc, ang = data_load(name)
 	dat = [acc, ang]
-	a = 19 #np.random.randint(len(spikes))
+	a = 15 #np.random.randint(len(spikes))
 	sf = [int(spikes[a, 0] - 400), int(spikes[a, 1] + 400)]
 	sf1 = [int(spikes[a, 0]), int(spikes[a, 1])]
 	pltit(n)
