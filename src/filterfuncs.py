@@ -1,11 +1,12 @@
-from math import ceil, floor
+# from math import ceil, floor
 # from statistics import mode, stdev
-import numpy as np
-import pandas as pd
-import pickle as pkl
-import matplotlib.pyplot as plt
-from scipy.signal import lfilter, freqz, filtfilt, butter
-from tkinter.font import BOLD
+# import numpy as np
+# import pandas as pd
+# import pickle as pkl
+# import matplotlib.pyplot as plt
+# from scipy.signal import lfilter, freqz, filtfilt, butter
+# from tkinter.font import BOLD
+from utils import *
 
 ## Functions:
 def read_data(name):

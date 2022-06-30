@@ -4,14 +4,22 @@ import os
 import numpy as np
 import pandas as pd
 import pickle as pkl
-import matplotlib.pyplot as plt
 from scipy.signal import lfilter, freqz, filtfilt, butter
 from tkinter.font import BOLD
 from filterfuncs import window_length
 from copy import deepcopy
 import sys
+if int(sys.argv[1]) == 1:
+	import matplotlib
+	matplotlib.use('TkAgg')
+	from matplotlib import pyplot as plt
+	sls = '/'
+	print('We are in Ubuntu!')
+else:
+	import matplotlib.pyplot as plt
+	sls = '\\'
 
-sls = sys.argv[1]
+# sls = sys.argv[1]
 
 class recording:
 
@@ -395,5 +403,6 @@ def hand_mirroring_windows(wds):
 	else:
 		print("Error on shape!")
 
-def set_ubuntu_slash():
-	return '/'
+
+
+#################################### FILTERFUNCS ####################################

@@ -1,11 +1,23 @@
-import numpy as np
-import pickle as pkl
-import matplotlib.pyplot as plt
-import os
-from utils import set_ubuntu_slash
-import sys
+# import numpy as np
+# import pickle as pkl
+# import matplotlib.pyplot as plt
+# import os
+# from utils import set_ubuntu_slash
+# import sys
 
-sls = sys.argv[1]
+# if int(sys.argv[1]) == 1:
+# 	import matplotlib
+# 	matplotlib.use('TkAgg')
+# 	from matplotlib import pyplot as plt
+# 	sls = '/'
+# 	print('We are in Ubuntu!')
+# else:
+# 	import matplotlib.pyplot as plt
+# 	sls = '\\'
+
+from utils import *
+
+# sls = sys.argv[1]
 
 def labeling(dat, k, sbsr):
 	#axs[k].step(np.arange(start = 1000, stop = 1400), dat[1000:1400], lw=.5)

@@ -1,9 +1,20 @@
-from sys import getsizeof
-from utils import *
-from filterfuncs import *
-import sys
+# if int(sys.argv[1]) == 1:
+# 	import matplotlib
+# 	matplotlib.use('TkAgg')
+# 	from matplotlib import pyplot as plt
+# 	sls = '/'
+# 	print('We are in Ubuntu!')
+# else:
+# 	import matplotlib.pyplot as plt
+# 	sls = '\\'
 
-sls = sys.argv[1]
+# from sys import getsizeof
+# from filterfuncs import *
+# import sys
+# sls = sys.argv[1]
+
+from filterfuncs import *
+# from utils import *
 
 names = ['sltn', 'sdrf', 'gali', 'pasx', 'anti', 'komi', 'fot']
 # names = ['sltn', 'sdrf']
