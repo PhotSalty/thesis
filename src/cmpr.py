@@ -59,21 +59,26 @@ def data_load(name):
 	acc = data1.reshape(len(data1)//3, 3)
 	ang = data2.reshape(len(data2)//3, 3)
 
+	if name.find('LH') != -1:
+		print("left handed subject detected")
+		acc, ang = hand_mirroring_signals(acc, ang)
+
 	acc = acc * 0.0004
 	ang = ang * 0.07
 
 	return spks, acc, ang
 
 
-names = ["sltn", "gali", "sdrf", "pasx", "anti", "komi", "fot", "agge", "conp"]
-names = ["sdrf", "agge", "conp"]
+names = ["sltn", "gali", "sdrf", "pasx", "anti", "komi", "fot", "agge", "conp", "LH_galios"]
+names = ["sdrf", "agge", "conp", "LH_galios"]
+names = ["sdrf", "LH_galios"]
 
 fig, axs = plt.subplots(np.shape(names)[0], 2)
 n = 0
 for name in names:
 	spikes, acc, ang = data_load(name)
 	dat = [acc, ang]
-	a = 15 #np.random.randint(len(spikes))
+	a = 10 #np.random.randint(len(spikes))
 	sf = [int(spikes[a, 0] - 400), int(spikes[a, 1] + 400)]
 	sf1 = [int(spikes[a, 0]), int(spikes[a, 1])]
 	pltit(n)

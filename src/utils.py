@@ -9,7 +9,9 @@ from tkinter.font import BOLD
 from filterfuncs import window_length
 from copy import deepcopy
 import sys
-if int(sys.argv[1]) == 1:
+# print(len(sys.argv))
+# if int(sys.argv[1]) == 1:
+if len(sys.argv) > 1:
 	import matplotlib
 	matplotlib.use('TkAgg')
 	from matplotlib import pyplot as plt
