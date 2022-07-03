@@ -232,7 +232,7 @@ def subj_tot(names):
 	neg = 0
 	for i in np.arange(len(names)):
 		n = names[i]
-		if i < 10:
+		if i < 9:
 			t = '0' + str(i+1)
 		else:
 			t = str(i+1)
@@ -284,7 +284,7 @@ def standardization_parameters(windows):
 
 
 def apply_stadardization(windows, means, stds):
-	a = deepcopy(windows)
+	# a = deepcopy(windows)
 	for i in np.arange(windows.shape[2]):
 		windows[:, :, i] = (windows[:, :, i] - means[i]) / stds[i]
 
