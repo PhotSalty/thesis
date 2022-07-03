@@ -7,8 +7,8 @@ from keras.optimizers import RMSprop
 import tensorflow as ts
 
 p = os.path.dirname(os.getcwd())
-p += sls + 'data' + sls + 'pickle_output' + sls
-datapkl = p + 'full_data.pkl'
+p1 = p + sls + 'data' + sls + 'pickle_output' + sls
+datapkl = p1 + 'full_data.pkl'
 
 with open(datapkl, 'rb') as f:
 	windows = pkl.load(f)
@@ -126,6 +126,5 @@ def LOSO_training(num_of_epochs, mdl_path):
 		model.save(filepath=model_path)
 
 epochs = 2
-p = os.path.dirname(os.getcwd())
 mdl_path = p + sls + 'Models' + sls
 LOSO_training(epochs, mdl_path)
