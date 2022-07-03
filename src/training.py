@@ -1,6 +1,10 @@
 from sklearn.utils import compute_class_weight
 from utils import *
 from sklearn.model_selection import LeaveOneGroupOut as LOGO
+from keras.layers import Dense, MaxPooling1D, LSTM, Dropout, Conv1D, TimeDistributed, BatchNormalization
+from keras.models import Sequential
+from keras.optimizers import RMSprop
+import tensorflow as ts
 
 p = os.path.dirname(os.getcwd())
 p += sls + 'data' + sls + 'pickle_output' + sls
@@ -88,9 +92,6 @@ def LOSO_training(num_of_epochs, mdl_path):
 		in_shape = windows.shape[1:]
 
 	## Model:
-		from keras.layers import Dense, MaxPooling1D, LSTM, Dropout, Conv1D, TimeDistributed, BatchNormalization
-		from keras.models import Sequential
-		from keras.optimizers import RMSprop
 		this_optimizer = RMSprop()
 
 		model = Sequential()
@@ -124,8 +125,7 @@ def LOSO_training(num_of_epochs, mdl_path):
 		model_path = mdl_path + 'M' + s + '_epochs_' + str(epochs) + '.mdl'
 		model.save(filepath=model_path)
 
-epochs = 5
+epochs = 2
 p = os.path.dirname(os.getcwd())
 mdl_path = p + sls + 'Models' + sls
-# LOSO_training(epochs, mdl_path)
-print(f'\n\n{mdl_path}')
+LOSO_training(epochs, mdl_path)
