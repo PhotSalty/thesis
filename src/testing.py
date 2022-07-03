@@ -36,6 +36,10 @@ model = load_model(model_path)
 
 pred_Y = model.predict(x = Test_X)
 
-plt.plot(Test_Y)
-plt.plot(pred_Y)
+threshold = 0.8
+pred_Y[np.where(pred_Y < threshold)] = 0
+pred_Y[np.where(pred_Y >= threshold)] = 1
+
+plt.plot(Test_Y, 'o')
+plt.plot(pred_Y, 'x')
 plt.show()
