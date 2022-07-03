@@ -128,3 +128,4 @@ epochs = 5
 p = os.path.dirname(os.getcwd())
 mdl_path = p + sls + 'Models' + sls
 # LOSO_training(epochs, mdl_path)
+print(f'\n\n{mdl_path}')
