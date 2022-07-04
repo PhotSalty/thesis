@@ -81,7 +81,7 @@ def LOSO_training(num_of_epochs, mdl_path):
 			if s_val != s:
 				flag = False
 		
-		val_list = np.append(val_list, s_val, axis=0)
+		val_list = np.append(val_list, s_val)
 
 		print(f'\n################ Session {s} ################')
 		ind = np.asarray(np.where(tag == s))[0]
@@ -154,11 +154,13 @@ def LOSO_training(num_of_epochs, mdl_path):
 	## Save model
 		model_path = mdl_path + 'M' + s + '_epochs_' + str(epochs) + '.mdl'
 		model.save(filepath=model_path)
-		
+                
+		plt.savefig(mdl_path + 'fig' + sls + 'M' + s + '.png')
+
 		return val_list
 
 epochs = 10
-mdl_path = p + sls + 'Models' + sls
+mdl_path = p + sls + 'Models' + sls + 'epochs_' + str(epochs) + sls
 val_list = LOSO_training(epochs, mdl_path)
 
 print(val_list)
