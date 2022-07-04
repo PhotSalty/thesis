@@ -54,6 +54,7 @@ p = os.path.dirname(os.getcwd())
 
 p1 = p + sls + 'data' + sls + 'pickled_data' + sls
 datap = p1 + name + ".pkl"
+datap = p1 + name + '_old' + ".pkl"
 
 with open(datap, 'rb') as f:
 	data = pkl.load(f)
