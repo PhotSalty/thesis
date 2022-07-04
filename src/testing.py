@@ -41,6 +41,7 @@ pred_Y[np.where(pred_Y >= threshold)] = 1
 
 # Find the local maxima between the predicted values
 p, _ = find_peaks(pred_Y[:, 0], distance = 10)
+print(p.shape)
 
 # Plot the comparison of the predictions with the ground truths
 plt.figure('Using alpha')
