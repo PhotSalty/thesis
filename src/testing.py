@@ -1,6 +1,7 @@
 from utils import *
 from keras import backend as K
 from keras.models import load_model
+from scipy.signal import find_peaks
 
 p = os.path.dirname(os.getcwd())
 p1 = p + sls + 'data' + sls + 'pickle_output' + sls
@@ -40,6 +41,17 @@ threshold = 0.8
 pred_Y[np.where(pred_Y < threshold)] = 0
 pred_Y[np.where(pred_Y >= threshold)] = 1
 
-plt.plot(Test_Y, 'o')
-plt.plot(pred_Y, 'x')
+
+# Find the local maxima between the predicted values
+p, _ = find_peaks(pred_Y[:, 0], distance = 10)
+
+# Plot the comparison of the predictions with the ground truths
+plt.figure()
+plt.title("Ground Truth Vs Prediction for Subject " + s)
+plt.plot(Test_Y)
+plt.plot(pred_Y)
+plt.plot(p, pred_Y[p, 0], 'x')
+
+# plt.plot(Test_Y, 'o')
+# plt.plot(pred_Y, 'x')
 plt.show()
