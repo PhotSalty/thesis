@@ -21,11 +21,8 @@ subjects = np.unique(tag)
 s = subjects[0]
 test_ind = np.asarray(np.where(tag == s))[0]
 
-Test_X = windows[:test_ind[0], :, :]
-Test_Y = labels[:test_ind[0]]
-
-Test_X = np.vstack( (Test_X, windows[test_ind[-1]+1:, :, :]) )
-Test_Y = np.hstack( (Test_Y, labels[test_ind[-1]+1:]) ).T
+Test_X = windows[test_ind[0]:test_ind[-1]+1, :, :]
+Test_Y = labels[test_ind[0]:test_ind[-1]+1]
 
 Test_X = apply_stadardization(windows = Test_X, means = means, stds = stds)
 print(f'\n################################ Test Data ready ################################################')

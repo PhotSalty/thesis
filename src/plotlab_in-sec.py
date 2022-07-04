@@ -48,7 +48,7 @@ def labeling(dat, k, sbsr):
 	# axs[0].set_title("Accelerators 3D")
 
 names = ["gali", "sdrf", "sltn", "pasx", "anti", "komi", "fot", "agge", "conp", "LH_galios"]
-name = names[9]
+name = names[2]
 
 p = os.path.dirname(os.getcwd())
 
