@@ -39,11 +39,12 @@ pred_Y = model.predict(x = Test_X)
 #pred_Y[np.where(pred_Y >= threshold)] = 1
 
 
-# Find the local maxima between the predicted values
+## Extract only the peaks of the prediction
 p, _ = find_peaks(pred_Y[:, 0], distance = 15)
-print(p.shape)
+print(f'peaks: {p.shape}')
+print(f'pred_Y: {pred_Y.shape}')
 
-# Plot the comparison of the predictions with the ground truths
+## Comparing prediction with the signal-labels
 plt.figure('Using alpha')
 plt.suptitle(f'Subject-{s}:',fontsize=24, y=1)
 plt.title(f'Comparing ground-truth labels with predictions',fontsize=16)
