@@ -44,7 +44,7 @@ p, _ = find_peaks(pred_Y[:, 0], distance = 10)
 
 # Plot the comparison of the predictions with the ground truths
 plt.figure()
-plt.title("Ground Truth Vs Prediction for Subject " + s)
+plt.title(f'Subject-{s}:\n Comparing ground-truth labels with predictions')
 plt.plot(Test_Y)
 plt.plot(pred_Y)
 plt.plot(p, pred_Y[p, 0], 'x')
