@@ -133,7 +133,7 @@ def LOSO_training(num_of_epochs, mdl_path):
 		# weights = compute_class_weight(class_weight='balanced', classes = num_of_classes, y = Train_Y)
 	
 	## Train model
-		history = model.fit(x=Train_X, y=Train_Y, epochs=num_of_epochs, class_weight=None, validation_data = Val_data)
+		history = model.fit(x=Train_X, y=Train_Y, epochs=num_of_epochs, verbose = 2, class_weight=None, validation_data = Val_data)
 		plt.figure(f'Subject out: {s} - Accuracy')
 		#  "Accuracy"
 		plt.plot(history.history['acc'])
