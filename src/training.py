@@ -47,34 +47,42 @@ def check_stnd(labels, windows):
 # check_stnd(labels, windows)
 
 
-#.-------------------------------------------- Data --------------------------------------------.#
-#.																								.#
-#.		1. windows																				.# 
-#.			- Shape: [num_of_wds, num_of_smpls, num_of_sensors]									.#
-#.			- Info:  Processed signal-frames of all subjects									.#
-#.																								.#
-#.		2. (window) labels																		.#
-#.			- Shape: [num_of_wds]																.#
-#.			- Info:  Each window, is labeled as "spike" -> 1, "non-spike" -> 0					.#
-#.																								.#
-#.		3. tag																					.#
-#.			- Shape: [num_of_wds]																.#
-#.			- Info:  Each subject has it's one tag, in order to identify each windows			.#
-#.																								.#
-#.		4. timestamps																			.#
-#.			- Shape: [num_of_wds]																.#
-#.			- Info:  Each window's exact starting-time (refers to the signal file)				.#
-#.																								.#
-#.----------------------------------------------------------------------------------------------.#
-
+##################################. Training Data analysis .####################################
+#.                                                                                            .#
+#.	1. windows                                                                                .#
+#.	   - Shape: [num_of_wds, num_of_smpls, num_of_sensors]                                    .#
+#.	   - Info:  Processed signal-frames of all subjects                                       .#
+#.
+#.	2. (window) labels
+#.	   - Shape: [num_of_wds]
+#.	   - Info:  Each window, is labeled as "spike" -> 1, "non-spike" -> 0
+#.
+#.	3. tag
+#.	   - Shape: [num_of_wds]
+#.	   - Info:  Each subject has it's one tag, in order to identify each windows
+#.
+#.	4. timestamps
+#.	   - Shape: [num_of_wds]
+#.	   - Info:  Each window's exact starting-time (refers to the signal file)
+#.
+################################################################################################
 
 ## LOSO method:
 def LOSO_training(num_of_epochs, mdl_path):
 	
 ## Subject list by their tags
 	subjects = np.unique(tag)
-	
+	val_list = np.empty((10,1))
 	for s in subjects:
+		flag = True
+		while flag:
+			rnd = np.random.randint(0,9)
+			s_val = subjects[rnd]
+			if s_val != s:
+				flag = False
+		
+		val_list = np.append(val_list, s_val, axis=0)
+
 		print(f'\n################ Session {s} ################')
 		ind = np.asarray(np.where(tag == s))[0]
 		print(f'\nTotal number of windows:   {windows.shape[0]} \nSubject-{s} windows:        {ind.shape[0]} \nTrain windows:             {windows.shape[0] - ind.shape[0]}')
@@ -88,6 +96,12 @@ def LOSO_training(num_of_epochs, mdl_path):
 		Train_X = apply_stadardization(windows = Train_X, means = means, stds = stds)
 		print(f'\n################################ Train Data ready ################################################')
 		
+		ind = np.asarray(np.where(tag == s_val))[0]
+		Val_X = windows[:ind[0], :, :]
+		Val_Y = labels[:ind[0]]
+		Val_X = np.vstack( (Val_X, windows[ind[-1]+1:, :, :]) )
+		Val_Y = np.hstack( (Val_Y, labels[ind[-1]+1:]) ).T
+		Val_data = (Val_X, Val_Y)
 	## Input shape: (num_of_samples, num_of_sensors) -> (42, 6)
 		in_shape = windows.shape[1:]
 
@@ -112,19 +126,40 @@ def LOSO_training(num_of_epochs, mdl_path):
 		
 		# model.compile(loss='binary_crossentropy', optimizer='RMSProp', metrics=['accuracy'])
 		model.compile(loss='binary_crossentropy', optimizer=this_optimizer, metrics=['accuracy'])
-		model.summary()
+		# model.summary()
 
 	## No need to balance class weights, because of balanced data (augmentation)
 		# num_of_classes = np.unique(labels)	#[0, 1]
 		# weights = compute_class_weight(class_weight='balanced', classes = num_of_classes, y = Train_Y)
 	
 	## Train model
-		model.fit(x=Train_X, y=Train_Y, epochs=num_of_epochs, class_weight=None)
-	
+		history = model.fit(x=Train_X, y=Train_Y, epochs=num_of_epochs, class_weight=None, validation_data = Val_data)
+		plt.figure(f'Subject out: {s} - Accuracy')
+		#  "Accuracy"
+		plt.plot(history.history['acc'])
+		plt.plot(history.history['val_acc'])
+		plt.title('model accuracy')
+		plt.ylabel('accuracy')
+		plt.xlabel('epoch')
+		plt.legend(['train', 'validation'], loc='upper left')
+		# "Loss"
+		plt.figure(f'Subject out: {s} - Loss')
+		plt.plot(history.history['loss'])
+		plt.plot(history.history['val_loss'])
+		plt.title('model loss')
+		plt.ylabel('loss')
+		plt.xlabel('epoch')
+		plt.legend(['train', 'validation'], loc='upper left')
+
 	## Save model
 		model_path = mdl_path + 'M' + s + '_epochs_' + str(epochs) + '.mdl'
 		model.save(filepath=model_path)
+		
+		return val_list
 
-epochs = 2
+epochs = 10
 mdl_path = p + sls + 'Models' + sls
-LOSO_training(epochs, mdl_path)
+val_list = LOSO_training(epochs, mdl_path)
+
+print(val_list)
+plt.show()
