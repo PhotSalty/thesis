@@ -12,7 +12,7 @@ import sys
 import platform
 
 psys = platform.system()
-print(psys)
+print(f'Your Operating system is: {psys}')
 if psys == 'Linux':
 	import matplotlib
 	matplotlib.use('TkAgg')
