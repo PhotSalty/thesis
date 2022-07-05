@@ -11,19 +11,21 @@ from copy import deepcopy
 import sys
 import platform
 
-print(platform.system())
-
-if len(sys.argv) > 1:
+psys = platform.system()
+print(psys)
+if psys == 'Linux':
 	import matplotlib
 	matplotlib.use('TkAgg')
 	from matplotlib import pyplot as plt
 	sls = '/'
 	print(f'Linux path-type: slash = {sls}')
-else:
+elif psys == 'Windows':
 	import matplotlib.pyplot as plt
 	sls = '\\'
 	print(f'Windows path-type: slash = {sls}')
-
+else:
+	print('Paths are constructed for Linux or Windows Operating Systems')
+	print('Check utils.py')
 
 ## A class to collect all recording data
 class recording:
