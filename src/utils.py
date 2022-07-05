@@ -9,20 +9,23 @@ from tkinter.font import BOLD
 from filterfuncs import window_length
 from copy import deepcopy
 import sys
-# print(len(sys.argv))
-# if int(sys.argv[1]) == 1:
+import platform
+
+print(platform.system())
+
 if len(sys.argv) > 1:
 	import matplotlib
 	matplotlib.use('TkAgg')
 	from matplotlib import pyplot as plt
 	sls = '/'
-	print('We are in Ubuntu!')
+	print(f'Linux path-type: slash = {sls}')
 else:
 	import matplotlib.pyplot as plt
 	sls = '\\'
+	print(f'Windows path-type: slash = {sls}')
 
-# sls = sys.argv[1]
 
+## A class to collect all recording data
 class recording:
 
 	def __init__(self, name, tag):
@@ -219,7 +222,7 @@ class recording:
 
 
 
-# collect all subjects in an object:
+## Collect all subjects in an object:
 def subj_tot(names):
 	print(f'\n# Before augmentation:')
 	wd_smpl_len = window_length(names, sls)
@@ -260,8 +263,8 @@ def subj_tot(names):
 	return subjects, ns, po, ne
 
 
-# input: all windows -> (100.000 windows, 48 samples, 6 sensors)
-# output: mean and std for each sensor
+## Standardization
+	# Calculate standardization parameters
 def standardization_parameters(windows):
 
 # Equal Method for extracting means and std:
@@ -282,7 +285,7 @@ def standardization_parameters(windows):
 	
 	return means, stds
 
-
+	# Apply standardization method
 def apply_stadardization(windows, means, stds):
 	# a = deepcopy(windows)
 	for i in np.arange(windows.shape[2]):
@@ -295,7 +298,8 @@ def apply_stadardization(windows, means, stds):
 	return windows
 
 
-## Positive class augmentation:
+## Spikes-augmentation: Balance negative and positive class
+	# generate rotation matrix
 def rand_rot(theta):
 	Ry = np.array([
 		[np.cos(theta), 0, np.sin(theta)],
@@ -328,8 +332,7 @@ def rand_rot(theta):
 
 	return Q
 
-
-## Spikes-augmentation: Balance negative and positive class
+	# balance window classes
 def balance_windows(subjects, ns, posi, neg):
 	newsubj = deepcopy(subjects)
 	s_ind = 0
@@ -406,5 +409,4 @@ def hand_mirroring_windows(wds):
 		print("Error on shape!")
 
 
-
-#################################### FILTERFUNCS ####################################
+## 
