@@ -4,12 +4,13 @@ import os
 import numpy as np
 import pandas as pd
 import pickle as pkl
-from scipy.signal import lfilter, freqz, filtfilt, butter
+from scipy.signal import lfilter, freqz, filtfilt, butter, find_peaks
 from tkinter.font import BOLD
 from filterfuncs import window_length
 from copy import deepcopy
 import sys
 import platform
+from sklearn.metrics import confusion_matrix
 
 psys = platform.system()
 print(f'Your Operating system is: {psys}')
@@ -26,6 +27,8 @@ elif psys == 'Windows':
 else:
 	print('Paths are constructed for Linux or Windows Operating Systems')
 	print('Check utils.py')
+
+
 
 ## A class to collect all recording data
 class recording:
@@ -265,6 +268,7 @@ def subj_tot(names):
 	return subjects, ns, po, ne
 
 
+
 ## Standardization
 	# Calculate standardization parameters
 def standardization_parameters(windows):
@@ -298,6 +302,7 @@ def apply_stadardization(windows, means, stds):
 	# print(f'Original means: {means}')
 	# print(f'Original stds: {stds}')
 	return windows
+
 
 
 ## Spikes-augmentation: Balance negative and positive class
@@ -380,7 +385,8 @@ def balance_windows(subjects, ns, posi, neg):
 	return newsubj, ind
 
 
-## Hand mirroring methods:
+
+## Hand mirroring methods
 def hand_mirroring_signals(acc, ang):
 	B = np.array([
 		[-1, 0, 0],
@@ -411,4 +417,64 @@ def hand_mirroring_windows(wds):
 		print("Error on shape!")
 
 
-## 
+
+#### Evaluation ##################################################################################################
+#.                                                                                                              .#
+#.                                                                                                              .#
+#. 1. Raw-signal prediction:                                                                                    .#
+#.                                                                                                              .#
+#.      In this type of prediction, we want to predict 1 positive class per spike.                              .#
+#.      In order to evaluate our model with this assumption, we have to separate                                .#
+#.      false-positive predictions in two cases:                                                                .#
+#.                                                                                                              .#
+#.        - fp_1: When the window is non-spike [class 0] and we predict it as a spike [class 1]                 .#
+#.                                                                                                              .#
+#.        = fp_2: When the window is a spike, we have predicted it as a spike, but we                           .#
+#.                have already got a positive prediction for the same spike.                                    .#
+#.                                                                                                              .#
+#.      They are both false-positives, but their decrease method differs                                        .#
+#.                                                                                                              .#
+#.                                                                                                              .#
+#. 2. Windows prediction:                                                                                       .#
+#.                                                                                                              .#
+#.      Evaluation coefficients:                                                                                .#
+#.       - True_Positives   -> tp                                                                               .#
+#.       - False_Positives  -> fp                                                                               .#
+#.       - False_Negatives  -> fn                                                                               .#
+#.       - True_Negatives   -> tn                                                                               .#
+#.                                                                                                              .#
+#.                                                                                                              .#
+##################################################################################################################
+def windows_eval_coeffs(testY, predY, pred_peaks):
+	tp = 0
+	fp = 0
+	fn = 0
+	tn = 0
+
+
+	## From predicion_peaks, we can only extract true and false positives
+	## because we've got a peak only where we got ~1 pred_prob
+	for p in pred_peaks:
+		
+		# Got a positive-class prediction
+		if predY[p] == 1:
+
+			# This spike-prediction is close enough to a spike movement (5 samples margin)
+			if sum(testY[p-5:p+5]) >= 1:
+				tp += 1
+			
+			# This spike-prediction refers to a non-spike movement
+			else:
+				fp += 1
+
+	## Since we know how many spikes we actually have and how many true-positives, we can
+	## calculate false negatives as:  ->  fasle_negatives = Test_peaks - true_positives
+	Test_peaks, _ = find_peaks(testY)
+	fn = sum(Test_peaks) - tp
+
+	## True negatives are the rest windows:
+	tn = testY.shape[0] - tn - fp - fn
+
+	return tp, fp, fn, tn
+	
+
