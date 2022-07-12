@@ -2,13 +2,13 @@ from sklearn.utils import compute_class_weight
 from utils import *
 from sklearn.model_selection import LeaveOneGroupOut as LOGO
 from keras.layers import Dense, MaxPooling1D, LSTM, Dropout, Conv1D, TimeDistributed, BatchNormalization
-from keras.models import Sequential
+from keras.models import Sequential, save_model
 from keras.optimizers import RMSprop
 import tensorflow as ts
 
 p = os.path.dirname(os.getcwd())
 p1 = p + sls + 'data' + sls + 'pickle_output' + sls
-datapkl = p1 + 'full_data.pkl'
+datapkl = p1 + 'aug_data.pkl'
 
 with open(datapkl, 'rb') as f:
 	windows = pkl.load(f)
@@ -194,14 +194,21 @@ def LOSO_training(num_of_epochs, mdl_path):
 		axs[1].legend(['train', 'validation'], loc='upper left')
 
 	## Save model
-		model_path = mdl_path + 'M' + s + '_epochs_' + str(epochs) + '.mdl'
+		model_path = mdl_path + 'LOSO_' + str(subjects.shape[0]) + 'ep' + str(epochs)
+		figure_path = model_path + sls + 'figures'
+
+		if not os.path.exists(figure_path):
+			os.makedirs(figure_path)			# figure_path contains model_path
+
+		model_path += sls + 'M' + s + '_epochs_' + str(epochs) + '.mdl'
 		model.save(filepath=model_path)
-                
-		fig.savefig(mdl_path + 'fig' + sls + 'M' + s + '.png')
+
+		figure_path += sls + 'M' + s + '.pdf'
+		fig.savefig(figure_path)
 
 	return val_list
 
-epochs = 10
+epochs = 2
 mdl_path = p + sls + 'Models' + sls + 'epochs_' + str(epochs) + sls
 val_list = LOSO_training(epochs, mdl_path)
 
