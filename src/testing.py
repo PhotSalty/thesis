@@ -77,6 +77,8 @@ cm_wpw = []
 
 for s in subjects:
 	pred_Y, Test_Y = test_subject(s)
+	# pred_Y[np.where(pred_Y >= 0.8)] = 1
+	pred_Y = np.where(pred_Y < 0.8, 0, 1)
 	print(f'Session of {s} Subject:\n')
 
 ## Extract the peaks of the positive class:
