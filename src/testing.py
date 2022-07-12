@@ -91,16 +91,16 @@ for s in subjects:
 
 ## Calculate evaluation coefficients spike-per-spike
 	tp_sps, fp_sps, fn_sps, tn_sps = windows_eval_coeffs(testY = Test_Y, predY = pred_Y, pred_peaks = p)
-	cm = np.array([[tn_sps, fp_sps], [fn_sps, tp_sps]])
-	cm_sps.append(cm)
+	cms = np.array([[tn_sps, fp_sps], [fn_sps, tp_sps]])
+	cm_sps.append(cms)
 
 ## Calculate evaluation coefficients window-per-window
-	cm = confusion_matrix(y_true = Test_Y, y_pred = pred_Y)
-	tn_wpw, fp_wpw, fn_wpw, tp_wpw = cm.ravel()
-	cm_wpw.append(cm)
+	cmw = confusion_matrix(y_true = Test_Y, y_pred = pred_Y)
+	tn_wpw, fp_wpw, fn_wpw, tp_wpw = cmw.ravel()
+	cm_wpw.append(cmw)
 
-	print_metrics(calculate_metrics(cm_sps), 'Spike-per-spike')
-	print_metrics(calculate_metrics(cm_wpw), 'Window-per-window')
+	print_metrics(calculate_metrics(cms), 'Spike-per-spike')
+	print_metrics(calculate_metrics(cmw), 'Window-per-window')
 
 
 
