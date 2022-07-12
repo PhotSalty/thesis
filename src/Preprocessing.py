@@ -51,6 +51,7 @@ with open(data_aug, 'wb') as f:
 	pkl.dump(means, f)
 	pkl.dump(stds, f)
 
+
 # print(f'\n\nRaw standardization parameters:\n Means = {means_raw}\n Stds = {stds_raw}')
 # print(f'\nAugmented standardization parameters:\n Means = {means_aug}\n Stds = {stds_aug}')
 # Check pickles:
