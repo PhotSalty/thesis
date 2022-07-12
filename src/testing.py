@@ -9,7 +9,8 @@ datapkl = p1 + 'raw_data.pkl'
 
 ## Create testing figures path
 epochs = 10
-fig_path = p + sls + 'Models' + sls + 'epochs_' + str(epochs) + sls + 'LOSO_10ep' + str(epochs) + sls + 'Testing_figures' + sls
+base_path = p + sls + 'Models' + sls + 'epochs_' + str(epochs) + sls + 'LOSO_10ep' + str(epochs) + sls
+fig_path = base_path + 'Testing_figures' + sls
 if not os.path.exists(fig_path):
 	os.makedirs(fig_path)
 
@@ -35,7 +36,7 @@ def test_subject(s):
 	print(f'\n################################ Test Data ready ################################################')
 
 	ep = str(epochs)
-	model_path = p + sls + 'Models' + sls + 'epochs_' + ep + sls + "LOSO_10ep" + ep + sls + 'M' + s + '_epochs_' + ep + '.mdl'
+	model_path = base_path + 'M' + s + '_epochs_' + ep + '.mdl'
 	model = load_model(model_path)
 
 	pred_Y = model.predict(x = Test_X)
@@ -81,11 +82,11 @@ for s in subjects:
 	# pred_Y[np.where(pred_Y >= 0.8)] = 1
 
 ## Random threshold pick = 0.8	
-	pred_Y = np.where(pred_Y < 0.8, 0, 1)
+	pred_Y = np.where(pred_Y < 0.85, 0, 1)
 	print(f'Session of {s} Subject:\n')
 
 ## Extract the peaks of the positive class:
-	p, _ = find_peaks(pred_Y[:, 0])
+	p, _ = find_peaks(pred_Y[:, 0], distance = 21)
 	print(f'peaks: {p.shape}')
 	print(f'pred_Y: {pred_Y.shape}')
 
