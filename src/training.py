@@ -167,7 +167,7 @@ def LOSO_training(num_of_epochs, mdl_path):
 		
 		# model.compile(loss='binary_crossentropy', optimizer='RMSProp', metrics=['accuracy'])
 		model.compile(loss='binary_crossentropy', optimizer=this_optimizer, metrics=['accuracy'])
-		# model.summary()
+		model.summary()
 
 	## No need to balance class weights, because of balanced data (augmentation)
 		# num_of_classes = np.unique(labels)	#[0, 1]
@@ -179,8 +179,8 @@ def LOSO_training(num_of_epochs, mdl_path):
 		fig, axs = plt.subplots(2)
 		fig.suptitle(f'Subject out: {s}')
 		#  "Accuracy"
-		axs[0].plot(history.history['acc'])
-		axs[0].plot(history.history['val_acc'])
+		axs[0].plot(history.history['accuracy'])
+		axs[0].plot(history.history['val_accuracy'])
 		axs[0].title('Model accuracy')
 		axs[0].ylabel('accuracy')
 		axs[0].xlabel('epoch')
