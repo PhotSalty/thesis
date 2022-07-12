@@ -8,7 +8,8 @@ p1 = p + sls + 'data' + sls + 'pickle_output' + sls
 datapkl = p1 + 'raw_data.pkl'
 
 ## Create testing figures path
-fig_path = p + sls + 'Testing' + sls + 'figures' + sls
+epochs = 10
+fig_path = p + sls + 'Models' + sls + 'epochs_' + str(epochs) + sls + 'LOSO_10ep' + str(epochs) + sls + 'Testing figures' + sls
 if not os.path.exists(fig_path):
 	os.makedirs(fig_path)
 
@@ -33,9 +34,7 @@ def test_subject(s):
 	Test_X = apply_stadardization(windows = Test_X, means = means, stds = stds)
 	print(f'\n################################ Test Data ready ################################################')
 
-	epochs = 10
-
-	model_path = p + sls + 'Models' + sls + 'M' + s + '_epochs_' + str(epochs) + '.mdl'
+	model_path = p + sls + 'Models' + sls + 'epochs_' + str(epochs) + sls + "LOSO_10ep" + str(epochs) + sls + 'M' + s + '_epochs_' + str(epochs) + '.mdl'
 	model = load_model(model_path)
 
 	pred_Y = model.predict(x = Test_X)
