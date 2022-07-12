@@ -182,16 +182,16 @@ def LOSO_training(num_of_epochs, mdl_path):
 		axs[0].plot(history.history['accuracy'])
 		axs[0].plot(history.history['val_accuracy'])
 		axs[0].set_title('Model accuracy')
-		axs[0].ylabel('accuracy')
-		axs[0].xlabel('epoch')
-		axs[0].legend(['train', 'validation'], loc='upper left')
+		axs[0].set_ylabel('accuracy')
+		axs[0].set_xlabel('epoch')
+		axs[0].legend(['train', 'validation'])
 		# "Loss"
 		axs[1].plot(history.history['loss'])
 		axs[1].plot(history.history['val_loss'])
 		axs[1].set_title('Model loss')
-		axs[1].ylabel('loss')
-		axs[1].xlabel('epoch')
-		axs[1].legend(['train', 'validation'], loc='upper left')
+		axs[1].set_ylabel('loss')
+		axs[1].set_xlabel('epoch')
+		axs[1].legend(['train', 'validation'])
 
 	## Save model
 		model_path = mdl_path + 'LOSO_' + str(subjects.shape[0]) + 'ep' + str(epochs)
