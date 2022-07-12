@@ -1,72 +1,74 @@
-# if int(sys.argv[1]) == 1:
-# 	import matplotlib
-# 	matplotlib.use('TkAgg')
-# 	from matplotlib import pyplot as plt
-# 	sls = '/'
-# 	print('We are in Ubuntu!')
-# else:
-# 	import matplotlib.pyplot as plt
-# 	sls = '\\'
-
-# from sys import getsizeof
-# from filterfuncs import *
-# import sys
-# sls = sys.argv[1]
-
 from filterfuncs import base_stats
 from utils import *
 
 names = ["sltn", "gali", "sdrf", "pasx", "anti", "komi", "fot", "agge", "conp", "LH_galios"]
 # names = ['sltn', 'sdrf']
 
-# Print full-base statistics:
+## Print full-base statistics:
 base_stats(names, sls)
 
-# Concatenate subjects:
+## Concatenate subjects:
 subjects, ns, po, ne = subj_tot(names)
 ns = np.array(ns) - 1
 
-# Balance data - Positive-class frames augmentation:
+## Balance data - Positive-class frames augmentation:
 newsubj, ind = balance_windows(subjects, ns, po, ne)
 
-wds = deepcopy(newsubj[0].windows)
-lbl = deepcopy(newsubj[0].labels)
-tg = np.full(np.shape(newsubj[0].labels), newsubj[0].tag)
-tmst = deepcopy(newsubj[0].timestamps)
-# print("1.", np.shape(newsubj[0].windows), np.shape(newsubj[0].labels), np.shape(tg), np.shape(newsubj[0].timestamps))
 
-for i in np.arange(len(newsubj))[1:]:
-	wds = np.append(wds, newsubj[i].windows, axis = 0)
-	lbl = np.append(lbl, newsubj[i].labels, axis = 0)
-	temp = np.full(np.shape(newsubj[i].labels), newsubj[i].tag)
-	tg = np.append(tg, temp, axis = 0)
-	tmst = np.append(tmst, newsubj[i].timestamps, axis = 0)
-	# print(f'{i+1}. {np.shape(newsubj[i].windows)}, {np.shape(newsubj[i].labels)}, {np.shape(temp)}, {np.shape(newsubj[i].timestamps)}')
+## Subjects with raw-windows
+wds_raw, lbl_raw, tg_raw, tmst_raw = concatenate_windows(subjects)
+means_raw, stds_raw = standardization_parameters(wds_raw)
 
-	means, stds = standardization_parameters(wds)
-
-# After fixing tmst size, I get an error creating an object with wds + the other
-# full = np.array([wds, lbl, tg, tmst], dtype = object)
+## Subjects with artificially-augmented-windows
+wds_aug, lbl_aug, tg_aug, tmst_aug = concatenate_windows(newsubj)
+means_aug, stds_aug = standardization_parameters(wds_aug)
 
 
+# Which standardization-parameters should we use?
+means = means_raw
+stds = stds_raw
+
+## Constructing path and save pickle:
 p = os.path.dirname(os.getcwd())
-
 p1 = p + sls + 'data' + sls + 'pickle_output' + sls
-datap = p1 + 'full_data' + '.pkl'
-# datap = 'full_data.pkl'
-with open(datap, 'wb') as f:
-	pkl.dump(wds, f)
-	pkl.dump(lbl, f)
-	pkl.dump(tg, f)
-	pkl.dump(tmst, f)
+
+data_raw = p1 + 'raw_data' + '.pkl'
+data_aug = p1 + 'aug_data' + '.pkl'
+
+with open(data_raw, 'wb') as f:
+	pkl.dump(wds_raw, f)
+	pkl.dump(lbl_raw, f)
+	pkl.dump(tg_raw, f)
+	pkl.dump(tmst_raw, f)
 	pkl.dump(means, f)
 	pkl.dump(stds, f)
 
-# with open(datap, 'rb') as f:
+with open(data_aug, 'wb') as f:
+	pkl.dump(wds_aug, f)
+	pkl.dump(lbl_aug, f)
+	pkl.dump(tg_aug, f)
+	pkl.dump(tmst_aug, f)
+	pkl.dump(means, f)
+	pkl.dump(stds, f)
+
+# print(f'\n\nRaw standardization parameters:\n Means = {means_raw}\n Stds = {stds_raw}')
+# print(f'\nAugmented standardization parameters:\n Means = {means_aug}\n Stds = {stds_aug}')
+# Check pickles:
+
+# print(wds_raw.shape, wds_aug.shape)
+
+# with open(data_raw, 'rb') as f:
 # 	wds1 = pkl.load(f)
 # 	lbl1 = pkl.load(f)
 # 	tg1 = pkl.load(f)
 # 	tmst1 = pkl.load(f)
+
+# fig, axs = plt.subplots(2)
+# axs[0].plot(wds1[300, :, 0])
+# axs[1].plot(subjects[0].windows[300, :, 0])
+
+# plt.show()
+
 
 # def comp(A, B, s):
 # 	if np.array_equal(A,B):
