@@ -9,7 +9,7 @@ datapkl = p1 + 'raw_data.pkl'
 
 ## Create testing figures path
 epochs = 10
-fig_path = p + sls + 'Models' + sls + 'epochs_' + str(epochs) + sls + 'LOSO_10ep' + str(epochs) + sls + 'Testing figures' + sls
+fig_path = p + sls + 'Models' + sls + 'epochs_' + str(epochs) + sls + 'LOSO_10ep' + str(epochs) + sls + 'Testing_figures' + sls
 if not os.path.exists(fig_path):
 	os.makedirs(fig_path)
 
