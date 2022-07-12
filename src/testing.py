@@ -82,7 +82,7 @@ for s in subjects:
 	# pred_Y[np.where(pred_Y >= 0.8)] = 1
 
 ## Random threshold pick = 0.8	
-	pred_Y = np.where(pred_Y < 0.85, 0, 1)
+	pred_Y = np.where(pred_Y < 0.65, 0, 1)
 	print(f'Session of {s} Subject:\n')
 
 ## Extract the peaks of the positive class:
