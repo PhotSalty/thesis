@@ -385,6 +385,23 @@ def balance_windows(subjects, ns, posi, neg):
 	return newsubj, ind
 
 
+def concatenate_windows(subj_list):
+	wds = deepcopy(subj_list[0].windows)
+	lbl = deepcopy(subj_list[0].labels)
+	tg = np.full(np.shape(subj_list[0].labels), subj_list[0].tag)
+	tmst = deepcopy(subj_list[0].timestamps)
+	# print("1.", np.shape(subj_list[0].windows), np.shape(subj_list[0].labels), np.shape(tg), np.shape(subj_list[0].timestamps))
+
+	for i in np.arange(len(subj_list))[1:]:
+		wds = np.append(wds, subj_list[i].windows, axis = 0)
+		lbl = np.append(lbl, subj_list[i].labels, axis = 0)
+		temp = np.full(np.shape(subj_list[i].labels), subj_list[i].tag)
+		tg = np.append(tg, temp, axis = 0)
+		tmst = np.append(tmst, subj_list[i].timestamps, axis = 0)
+		# print(f'{i+1}. {np.shape(subj_list[i].windows)}, {np.shape(subj_list[i].labels)}, {np.shape(temp)}, {np.shape(subj_list[i].timestamps)}')
+
+	return wds, lbl, tg, tmst
+
 
 ## Hand mirroring methods
 def hand_mirroring_signals(acc, ang):
@@ -446,14 +463,9 @@ def hand_mirroring_windows(wds):
 #.                                                                                                              .#
 ##################################################################################################################
 def windows_eval_coeffs(testY, predY, pred_peaks):
-	tp = 0
-	fp = 0
-	fn = 0
-	tn = 0
+	tp, fp, fn, tn = 0, 0, 0, 0
 
-
-	## From predicion_peaks, we can only extract true and false positives
-	## because we've got a peak only where we got ~1 pred_prob
+	# From predicion_peaks, we can only extract true and false positives
 	for p in pred_peaks:
 		
 		# Got a positive-class prediction
@@ -467,14 +479,25 @@ def windows_eval_coeffs(testY, predY, pred_peaks):
 			else:
 				fp += 1
 
-	## Since we know how many spikes we actually have and how many true-positives, we can
-	## calculate false negatives as:  ->  fasle_negatives = Test_peaks - true_positives
+	# #.false-negatives = #.all-true-peaks - #.correctly-predicted-peaks =>
+	# => fn = Test-peaks - tp
 	Test_peaks, _ = find_peaks(testY)
 	fn = sum(Test_peaks) - tp
 
-	## True negatives are the rest windows:
+	## The rest of the windows will be the true negatives
 	tn = testY.shape[0] - tn - fp - fn
 
 	return tp, fp, fn, tn
 	
+
+def calculate_metrics(cm):
+	
+	tn, fp, fn, tp = cm.ravel()
+	
+	Acc  = (tp + tn) / (tp + tn + fp + fn)
+	Prec = tp / (tp + fp)
+	Rec  = tp / (tp + fn)
+	F1s  = 2 * (Prec * Rec) / (Prec + Rec)
+
+	return Acc, Prec, Rec, F1s
 
