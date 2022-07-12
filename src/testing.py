@@ -34,7 +34,8 @@ def test_subject(s):
 	Test_X = apply_stadardization(windows = Test_X, means = means, stds = stds)
 	print(f'\n################################ Test Data ready ################################################')
 
-	model_path = p + sls + 'Models' + sls + 'epochs_' + str(epochs) + sls + "LOSO_10ep" + str(epochs) + sls + 'M' + s + '_epochs_' + str(epochs) + '.mdl'
+	ep = str(epochs)
+	model_path = p + sls + 'Models' + sls + 'epochs_' + ep + sls + "LOSO_10ep" + ep + sls + 'M' + s + '_epochs_' + ep + '.mdl'
 	model = load_model(model_path)
 
 	pred_Y = model.predict(x = Test_X)
@@ -78,6 +79,8 @@ cm_wpw = []
 for s in subjects:
 	pred_Y, Test_Y = test_subject(s)
 	# pred_Y[np.where(pred_Y >= 0.8)] = 1
+
+## Random threshold pick = 0.8	
 	pred_Y = np.where(pred_Y < 0.8, 0, 1)
 	print(f'Session of {s} Subject:\n')
 
