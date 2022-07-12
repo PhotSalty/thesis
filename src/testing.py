@@ -99,8 +99,11 @@ for s in subjects:
 	tn_wpw, fp_wpw, fn_wpw, tp_wpw = cmw.ravel()
 	cm_wpw.append(cmw)
 
-	print_metrics(calculate_metrics(cms), 'Spike-per-spike')
-	print_metrics(calculate_metrics(cmw), 'Window-per-window')
+	acc, prec, rec, f1s = calculate_metrics(cms)
+	print_metrics(acc, prec, rec, f1s, 'Spike-per-spike')
+
+	acc, prec, rec, f1s = calculate_metrics(cmw)
+	print_metrics(acc, prec, rec, f1s, 'Window-per-window')
 
 
 
@@ -109,26 +112,24 @@ print(f'Confusion matrices of {subjects.shape[0]} subjects are calculated.')
 # Spike-per-spike Aggregate cm:
 cm_sps_sum = np.sum(cm_sps, axis = 0)
 Acc_sps_sum, Prec_sps_sum, Rec_sps_sum, F1_sps_sum = calculate_metrics(cm = cm_sps_sum)
-Metrics_sps_sum = Acc_sps_sum, Prec_sps_sum, Rec_sps_sum, F1_sps_sum
+
+print_metrics(Acc_sps_sum, Prec_sps_sum, Rec_sps_sum, F1_sps_sum, 'Spike-per-spike Sum')
 
 # Spike-per-spike Mean cm:
 cm_sps_mean = np.mean(cm_sps, axis = 0)
 Acc_sps_mean, Prec_sps_mean, Rec_sps_mean, F1_sps_mean = calculate_metrics(cm = cm_sps_mean)
-Metrics_sps_mean = Acc_sps_mean, Prec_sps_mean, Rec_sps_mean, F1_sps_mean
 
-print_metrics(Metrics_sps_mean, 'Spike-per-spike Mean')
-print_metrics(Metrics_sps_sum, 'Spike-per-spike Sum')
+print_metrics(Acc_sps_mean, Prec_sps_mean, Rec_sps_mean, F1_sps_mean, 'Spike-per-spike Mean')
 
 
 # Window-per-window Aggregate cm:
 cm_wpw_sum = np.sum(cm_wpw, axis = 0)
 Acc_wpw_sum, Prec_wpw_sum, Rec_wpw_sum, F1_wpw_sum = calculate_metrics(cm = cm_wpw_sum)
-Metrics_wpw_sum = Acc_wpw_sum, Prec_wpw_sum, Rec_wpw_sum, F1_wpw_sum
+
+print_metrics(Acc_wpw_sum, Prec_wpw_sum, Rec_wpw_sum, F1_wpw_sum, 'window-per-window Sum')
 
 # Window-per-window Mean cm:
 cm_wpw_mean = np.mean(cm_wpw, axis = 0)
 Acc_wpw_mean, Prec_wpw_mean, Rec_wpw_mean, F1_wpw_mean = calculate_metrics(cm = cm_wpw_mean)
-Metrics_wpw_mean = Acc_wpw_mean, Prec_wpw_mean, Rec_wpw_mean, F1_wpw_mean
 
-print_metrics(Metrics_wpw_mean, 'window-per-window Mean')
-print_metrics(Metrics_wpw_sum, 'window-per-window Sum')
+print_metrics(Acc_wpw_mean, Prec_wpw_mean, Rec_wpw_mean, F1_wpw_mean, 'window-per-window Mean')
