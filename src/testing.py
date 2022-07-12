@@ -1,11 +1,16 @@
 from utils import *
 from keras import backend as K
 from keras.models import load_model
-from scipy.signal import find_peaks
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 
 p = os.path.dirname(os.getcwd())
 p1 = p + sls + 'data' + sls + 'pickle_output' + sls
-datapkl = p1 + 'full_data.pkl'
+datapkl = p1 + 'raw_data.pkl'
+
+## Create testing figures path
+fig_path = p + sls + 'Testing' + sls + 'figures' + sls
+if not os.path.exists(fig_path):
+	os.makedirs(fig_path)
 
 with open(datapkl, 'rb') as f:
 	windows = pkl.load(f)
@@ -18,40 +23,111 @@ with open(datapkl, 'rb') as f:
 ## Subject list by their tags
 subjects = np.unique(tag)
 
-s = subjects[8]
-test_ind = np.asarray(np.where(tag == s))[0]
 
-Test_X = windows[test_ind[0]:test_ind[-1]+1, :, :]
-Test_Y = labels[test_ind[0]:test_ind[-1]+1]
+def test_subject(s):
+	test_ind = np.asarray(np.where(tag == s))[0]
 
-Test_X = apply_stadardization(windows = Test_X, means = means, stds = stds)
-print(f'\n################################ Test Data ready ################################################')
+	Test_X = windows[test_ind[0]:test_ind[-1]+1, :, :]
+	Test_Y = labels[test_ind[0]:test_ind[-1]+1]
 
-epochs = 2
+	Test_X = apply_stadardization(windows = Test_X, means = means, stds = stds)
+	print(f'\n################################ Test Data ready ################################################')
 
-model_path = p + sls + 'Models' + sls + 'M' + s + '_epochs_' + str(epochs) + '.mdl'
-model = load_model(model_path)
+	epochs = 10
 
-pred_Y = model.predict(x = Test_X)
+	model_path = p + sls + 'Models' + sls + 'M' + s + '_epochs_' + str(epochs) + '.mdl'
+	model = load_model(model_path)
 
-#threshold = 0.8
-#pred_Y[np.where(pred_Y < threshold)] = 0
-#pred_Y[np.where(pred_Y >= threshold)] = 1
+	pred_Y = model.predict(x = Test_X)
+	return pred_Y, Test_Y
+
+def plot_pred(s, fig_path):
+	## Comparing prediction with the signal-labels
+	fig = plt.figure('Testing figure ' + s)
+	plt.suptitle(f'Subject-{s}:',fontsize=24, y=1)
+	plt.title(f'Comparing ground-truth labels with predictions',fontsize=16)
+	plt.plot(pred_Y, color = 'orange')
+	plt.plot(Test_Y, color = 'blue', alpha = 0.5)
+	plt.plot(p, pred_Y[p, 0], 'x', color = 'green')
+
+	fig.savefig(fig_path + 'Subj' + s + '.pdf')
+
+def print_metrics(Acc, Prec, Rec, F1s, mtype):
+	print(f'\n{mtype} metrics:') 
+	print(f'''
+	Accuracy  = {Acc:.3f}
+	Precision = {Prec:.3f}
+	Recall    = {Rec:.3f}
+	F1-score  = {F1s:.3f}''')
+
+## Threshold of true-prediction:	----------> Not picked yet
+	# threshold = 0.8
+	# pred_Y[np.where(pred_Y < threshold)] = 0
+	# pred_Y[np.where(pred_Y >= threshold)] = 1
+
+##   find_peaks() -> p    -> 1 positive prediction per predicted spike
+## Windows_eval_coeffs(p) -> Spike-per-spike evaluation, eliminating
+##                           the extra predictions of the same spike
+## 
+##   confusion_matrix()   -> Window-per-window evaluation, more accurate
+##                           but not able to define "spike-area"
+##
+
+cm_sps = []
+cm_wpw = []
+
+for s in subjects:
+	pred_Y, Test_Y = test_subject(s)
+	print(f'Session of {s} Subject:\n')
+
+## Extract the peaks of the positive class:
+	p, _ = find_peaks(pred_Y[:, 0])
+	print(f'peaks: {p.shape}')
+	print(f'pred_Y: {pred_Y.shape}')
+
+## Plotting
+	plot_pred(s, fig_path)
+
+## Calculate evaluation coefficients spike-per-spike
+	tp_sps, fp_sps, fn_sps, tn_sps = windows_eval_coeffs(testY = Test_Y, predY = pred_Y, pred_peaks = p)
+	cm = np.array([[tn_sps, fp_sps], [fn_sps, tp_sps]])
+	cm_sps.append(cm)
+
+## Calculate evaluation coefficients window-per-window
+	cm = confusion_matrix(y_true = Test_Y, y_pred = pred_Y)
+	tn_wpw, fp_wpw, fn_wpw, tp_wpw = cm.ravel()
+	cm_wpw.append(cm)
+
+	print_metrics(calculate_metrics(cm_sps), 'Spike-per-spike')
+	print_metrics(calculate_metrics(cm_wpw), 'Window-per-window')
 
 
-## Extract only the peaks of the prediction
-p, _ = find_peaks(pred_Y[:, 0], distance = 15)
-print(f'peaks: {p.shape}')
-print(f'pred_Y: {pred_Y.shape}')
 
-## Comparing prediction with the signal-labels
-plt.figure('Using alpha')
-plt.suptitle(f'Subject-{s}:',fontsize=24, y=1)
-plt.title(f'Comparing ground-truth labels with predictions',fontsize=16)
-plt.plot(pred_Y, color = 'orange')
-plt.plot(Test_Y, color = 'blue', alpha = 0.5)
-plt.plot(p, pred_Y[p, 0], 'x', color = 'green')
+print(f'Confusion matrices of {subjects.shape[0]} subjects are calculated.')
 
-# plt.plot(Test_Y, 'o')
-# plt.plot(pred_Y, 'x')
-plt.show()
+# Spike-per-spike Aggregate cm:
+cm_sps_sum = np.sum(cm_sps, axis = 0)
+Acc_sps_sum, Prec_sps_sum, Rec_sps_sum, F1_sps_sum = calculate_metrics(cm = cm_sps_sum)
+Metrics_sps_sum = Acc_sps_sum, Prec_sps_sum, Rec_sps_sum, F1_sps_sum
+
+# Spike-per-spike Mean cm:
+cm_sps_mean = np.mean(cm_sps, axis = 0)
+Acc_sps_mean, Prec_sps_mean, Rec_sps_mean, F1_sps_mean = calculate_metrics(cm = cm_sps_mean)
+Metrics_sps_mean = Acc_sps_mean, Prec_sps_mean, Rec_sps_mean, F1_sps_mean
+
+print_metrics(Metrics_sps_mean, 'Spike-per-spike Mean')
+print_metrics(Metrics_sps_sum, 'Spike-per-spike Sum')
+
+
+# Window-per-window Aggregate cm:
+cm_wpw_sum = np.sum(cm_wpw, axis = 0)
+Acc_wpw_sum, Prec_wpw_sum, Rec_wpw_sum, F1_wpw_sum = calculate_metrics(cm = cm_wpw_sum)
+Metrics_wpw_sum = Acc_wpw_sum, Prec_wpw_sum, Rec_wpw_sum, F1_wpw_sum
+
+# Window-per-window Mean cm:
+cm_wpw_mean = np.mean(cm_wpw, axis = 0)
+Acc_wpw_mean, Prec_wpw_mean, Rec_wpw_mean, F1_wpw_mean = calculate_metrics(cm = cm_wpw_mean)
+Metrics_wpw_mean = Acc_wpw_mean, Prec_wpw_mean, Rec_wpw_mean, F1_wpw_mean
+
+print_metrics(Metrics_wpw_mean, 'window-per-window Mean')
+print_metrics(Metrics_wpw_sum, 'window-per-window Sum')
