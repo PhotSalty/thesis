@@ -33,7 +33,7 @@ def test_subject(s):
 	Test_Y = labels[test_ind[0]:test_ind[-1]+1]
 
 	Test_X = apply_stadardization(windows = Test_X, means = means, stds = stds)
-	print(f'\n################################ Test Data ready ################################################')
+	#print(f'\n################################ Test Data ready ################################################')
 
 	ep = str(epochs)
 	model_path = base_path + 'M' + s + '_epochs_' + ep + '.mdl'
@@ -54,12 +54,12 @@ def plot_pred(s, fig_path):
 	fig.savefig(fig_path + 'Subj' + s + '.pdf')
 
 def print_metrics(Acc, Prec, Rec, F1s, mtype):
-	print(f'\n{mtype} metrics:') 
+	print(f'\n  {mtype} metrics:') 
 	print(f'''
-	Accuracy  = {Acc:.3f}
-	Precision = {Prec:.3f}
-	Recall    = {Rec:.3f}
-	F1-score  = {F1s:.3f}''')
+	\tAccuracy  = {Acc:.3f}
+	\tPrecision = {Prec:.3f}
+	\tRecall    = {Rec:.3f}
+	\tF1-score  = {F1s:.3f}\n''')
 
 ## Threshold of true-prediction:	----------> Not picked yet
 	# threshold = 0.8
@@ -83,57 +83,57 @@ for s in subjects:
 
 ## Random threshold pick = 0.8	
 	pred_Y = np.where(pred_Y < 0.65, 0, 1)
-	print(f'Session of {s} Subject:\n')
+	print(f'\nSession of Subject {s}:\n')
 
 ## Extract the peaks of the positive class:
 	p, _ = find_peaks(pred_Y[:, 0], distance = 21)
-	print(f'peaks: {p.shape}')
-	print(f'pred_Y: {pred_Y.shape}')
+	print(f'  peaks: {p.shape}')
+	print(f'  pred_Y: {pred_Y.shape}')
 
 ## Plotting
 	plot_pred(s, fig_path)
 
 ## Calculate evaluation coefficients spike-per-spike
-	tp_sps, fp_sps, fn_sps, tn_sps = windows_eval_coeffs(testY = Test_Y, predY = pred_Y, pred_peaks = p)
-	cms = np.array([[tn_sps, fp_sps], [fn_sps, tp_sps]])
-	cm_sps.append(cms)
+	# tp_sps, fp_sps, fn_sps, tn_sps = windows_eval_coeffs(testY = Test_Y, predY = pred_Y, pred_peaks = p)
+	# cms = np.array([[tn_sps, fp_sps], [fn_sps, tp_sps]])
+	# cm_sps.append(cms)
 
 ## Calculate evaluation coefficients window-per-window
 	cmw = confusion_matrix(y_true = Test_Y, y_pred = pred_Y)
 	tn_wpw, fp_wpw, fn_wpw, tp_wpw = cmw.ravel()
 	cm_wpw.append(cmw)
 
-	acc, prec, rec, f1s = calculate_metrics(cms)
-	print_metrics(acc, prec, rec, f1s, 'Spike-per-spike')
+	#acc, prec, rec, f1s = calculate_metrics(cms)
+	#print_metrics(acc, prec, rec, f1s, 'Spike-per-spike')
 
 	acc, prec, rec, f1s = calculate_metrics(cmw)
 	print_metrics(acc, prec, rec, f1s, 'Window-per-window')
 
 
 
-print(f'Confusion matrices of {subjects.shape[0]} subjects are calculated.')
+print(f'\nConfusion matrices of {subjects.shape[0]} subjects are calculated.')
 
 # Spike-per-spike Aggregate cm:
-cm_sps_sum = np.sum(cm_sps, axis = 0)
-Acc_sps_sum, Prec_sps_sum, Rec_sps_sum, F1_sps_sum = calculate_metrics(cm = cm_sps_sum)
+#cm_sps_sum = np.sum(cm_sps, axis = 0)
+#Acc_sps_sum, Prec_sps_sum, Rec_sps_sum, F1_sps_sum = calculate_metrics(cm = cm_sps_sum)
 
-print_metrics(Acc_sps_sum, Prec_sps_sum, Rec_sps_sum, F1_sps_sum, 'Spike-per-spike Sum')
+#print_metrics(Acc_sps_sum, Prec_sps_sum, Rec_sps_sum, F1_sps_sum, 'Spike-per-spike Sum')
 
 # Spike-per-spike Mean cm:
-cm_sps_mean = np.mean(cm_sps, axis = 0)
-Acc_sps_mean, Prec_sps_mean, Rec_sps_mean, F1_sps_mean = calculate_metrics(cm = cm_sps_mean)
+#cm_sps_mean = np.mean(cm_sps, axis = 0)
+#Acc_sps_mean, Prec_sps_mean, Rec_sps_mean, F1_sps_mean = calculate_metrics(cm = cm_sps_mean)
 
-print_metrics(Acc_sps_mean, Prec_sps_mean, Rec_sps_mean, F1_sps_mean, 'Spike-per-spike Mean')
+#print_metrics(Acc_sps_mean, Prec_sps_mean, Rec_sps_mean, F1_sps_mean, 'Spike-per-spike Mean')
 
 
 # Window-per-window Aggregate cm:
 cm_wpw_sum = np.sum(cm_wpw, axis = 0)
 Acc_wpw_sum, Prec_wpw_sum, Rec_wpw_sum, F1_wpw_sum = calculate_metrics(cm = cm_wpw_sum)
 
-print_metrics(Acc_wpw_sum, Prec_wpw_sum, Rec_wpw_sum, F1_wpw_sum, 'window-per-window Sum')
+print_metrics(Acc_wpw_sum, Prec_wpw_sum, Rec_wpw_sum, F1_wpw_sum, 'Window-per-window total sum')
 
 # Window-per-window Mean cm:
-cm_wpw_mean = np.mean(cm_wpw, axis = 0)
-Acc_wpw_mean, Prec_wpw_mean, Rec_wpw_mean, F1_wpw_mean = calculate_metrics(cm = cm_wpw_mean)
+#cm_wpw_mean = np.mean(cm_wpw, axis = 0)
+#Acc_wpw_mean, Prec_wpw_mean, Rec_wpw_mean, F1_wpw_mean = calculate_metrics(cm = cm_wpw_mean)
 
-print_metrics(Acc_wpw_mean, Prec_wpw_mean, Rec_wpw_mean, F1_wpw_mean, 'window-per-window Mean')
+#print_metrics(Acc_wpw_mean, Prec_wpw_mean, Rec_wpw_mean, F1_wpw_mean, 'window-per-window Mean')
