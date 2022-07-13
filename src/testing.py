@@ -5,14 +5,18 @@ from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_sc
 
 p = os.path.dirname(os.getcwd())
 p1 = p + sls + 'data' + sls + 'pickle_output' + sls
-datapkl = p1 + 'raw_data.pkl'
+datapkl = p1 + 'raw_data10.pkl'
 
 ## Create testing figures path
-epochs = 10
-base_path = p + sls + 'Models' + sls + 'epochs_' + str(epochs) + sls + 'LOSO_10ep' + str(epochs) + sls
-fig_path = base_path + 'Testing_figures' + sls
-if not os.path.exists(fig_path):
-	os.makedirs(fig_path)
+#epochs = 10
+epochs = np.int16(sys.argv[1])
+
+# base_path = p + sls + 'Models' + sls + 'epochs_' + str(epochs) + sls + 'LOSO_10ep' + str(epochs) + sls
+# base_path = p + sls + 'Models' + sls + 'epochs_' + str(epochs) + sls + 'LOSO_' + subjects[-1] + sls
+# fig_path = base_path + 'Testing_figures' + sls
+
+#if not os.path.exists(fig_path):
+#	os.makedirs(fig_path)
 
 with open(datapkl, 'rb') as f:
 	windows = pkl.load(f)
@@ -24,6 +28,12 @@ with open(datapkl, 'rb') as f:
 
 ## Subject list by their tags
 subjects = np.unique(tag)
+
+base_path = p + sls + 'Models' + sls + 'epochs_' + str(epochs) + sls + 'LOSO_' + subjects[-1] + sls
+fig_path = base_path + 'Testing_figures' + sls
+
+if not os.path.exists(fig_path):
+	os.makedirs(fig_path)
 
 
 def test_subject(s):
@@ -82,11 +92,11 @@ for s in subjects:
 	# pred_Y[np.where(pred_Y >= 0.8)] = 1
 
 ## Random threshold pick = 0.8	
-	pred_Y = np.where(pred_Y < 0.65, 0, 1)
+	pred_Y = np.where(pred_Y < 0.8, 0, 1)
 	print(f'\nSession of Subject {s}:\n')
 
 ## Extract the peaks of the positive class:
-	p, _ = find_peaks(pred_Y[:, 0], distance = 21)
+	p, _ = find_peaks(pred_Y[:, 0], distance = 20)
 	print(f'  peaks: {p.shape}')
 	print(f'  pred_Y: {pred_Y.shape}')
 
@@ -94,17 +104,17 @@ for s in subjects:
 	plot_pred(s, fig_path)
 
 ## Calculate evaluation coefficients spike-per-spike
-	# tp_sps, fp_sps, fn_sps, tn_sps = windows_eval_coeffs(testY = Test_Y, predY = pred_Y, pred_peaks = p)
-	# cms = np.array([[tn_sps, fp_sps], [fn_sps, tp_sps]])
-	# cm_sps.append(cms)
+	tp_sps, fp_sps, fn_sps, tn_sps = windows_eval_coeffs(testY = Test_Y, predY = pred_Y, pred_peaks = p)
+	cms = np.array([[tn_sps, fp_sps], [fn_sps, tp_sps]])
+	cm_sps.append(cms)
 
 ## Calculate evaluation coefficients window-per-window
 	cmw = confusion_matrix(y_true = Test_Y, y_pred = pred_Y)
 	tn_wpw, fp_wpw, fn_wpw, tp_wpw = cmw.ravel()
 	cm_wpw.append(cmw)
 
-	#acc, prec, rec, f1s = calculate_metrics(cms)
-	#print_metrics(acc, prec, rec, f1s, 'Spike-per-spike')
+	acc, prec, rec, f1s = calculate_metrics(cms)
+	print_metrics(acc, prec, rec, f1s, 'Spike-per-spike')
 
 	acc, prec, rec, f1s = calculate_metrics(cmw)
 	print_metrics(acc, prec, rec, f1s, 'Window-per-window')
@@ -114,10 +124,10 @@ for s in subjects:
 print(f'\nConfusion matrices of {subjects.shape[0]} subjects are calculated.')
 
 # Spike-per-spike Aggregate cm:
-#cm_sps_sum = np.sum(cm_sps, axis = 0)
-#Acc_sps_sum, Prec_sps_sum, Rec_sps_sum, F1_sps_sum = calculate_metrics(cm = cm_sps_sum)
+cm_sps_sum = np.sum(cm_sps, axis = 0)
+Acc_sps_sum, Prec_sps_sum, Rec_sps_sum, F1_sps_sum = calculate_metrics(cm = cm_sps_sum)
 
-#print_metrics(Acc_sps_sum, Prec_sps_sum, Rec_sps_sum, F1_sps_sum, 'Spike-per-spike Sum')
+print_metrics(Acc_sps_sum, Prec_sps_sum, Rec_sps_sum, F1_sps_sum, 'Spike-per-spike Sum')
 
 # Spike-per-spike Mean cm:
 #cm_sps_mean = np.mean(cm_sps, axis = 0)
