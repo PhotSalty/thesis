@@ -2,6 +2,12 @@ from filterfuncs import base_stats
 from utils import *
 
 names = ["sltn", "gali", "sdrf", "pasx", "anti", "komi", "fot", "agge", "conp", "LH_galios"]
+
+## Without left-handed subject
+# names = ["sltn", "gali", "sdrf", "pasx", "anti", "komi", "fot", "agge", "conp"]
+
+## Threshold selection
+# names = ['sltn', 'gali', 'sdrf', 'anti', 'conp']
 # names = ['sltn', 'sdrf']
 
 ## Print full-base statistics:
@@ -32,8 +38,8 @@ stds = stds_raw
 p = os.path.dirname(os.getcwd())
 p1 = p + sls + 'data' + sls + 'pickle_output' + sls
 
-data_raw = p1 + 'raw_data' + '.pkl'
-data_aug = p1 + 'aug_data' + '.pkl'
+data_raw = p1 + 'raw_data' + str(len(names)) + '-test.pkl'
+data_aug = p1 + 'aug_data' + str(len(names)) + '-test.pkl'
 
 with open(data_raw, 'wb') as f:
 	pkl.dump(wds_raw, f)
