@@ -5,7 +5,7 @@ from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_sc
 
 p = os.path.dirname(os.getcwd())
 p1 = p + sls + 'data' + sls + 'pickle_output' + sls
-datapkl = p1 + 'raw_data10.pkl'
+datapkl = p1 + 'raw_data' + str(sys.argv[2]) + '.pkl'
 
 ## Create testing figures path
 #epochs = 10
