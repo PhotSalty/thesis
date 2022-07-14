@@ -97,7 +97,7 @@ class recording:
 		spks = spikes[:, [1,2]]
 		# blcks = blocks
 		# srvs = services
-		t = np.arange(len(acc)) / 64
+		t = np.arange(len(acc)) / self.fs
 
 		spks = np.array(spks*self.fs)
 		spks[:, 0] = np.round(spks[:, 0])
@@ -405,14 +405,20 @@ def concatenate_windows(subj_list):
 
 ## Hand mirroring methods
 def hand_mirroring_signals(acc, ang):
-	B = np.array([
+	acc_x = np.array([
 		[-1, 0, 0],
 		[0, 1, 0],
 		[0, 0, 1]
 	])
 
-	acc = acc @ B
-	ang = ang @ B
+	ang_y_z = np.array([
+		[1, 0, 0],
+		[0, -1, 0],
+		[0, 0, -1]
+	])
+
+	acc = acc @ acc_x
+	ang = ang @ ang_y_z
 
 	return acc, ang
 	
