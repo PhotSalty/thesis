@@ -89,7 +89,6 @@ cm_wpw = []
 
 for s in subjects:
 	pred_Y, Test_Y = test_subject(s)
-	# pred_Y[np.where(pred_Y >= 0.8)] = 1
 
 ## Random threshold pick = 0.8	
 	pred_Y = np.where(pred_Y < 0.8, 0, 1)

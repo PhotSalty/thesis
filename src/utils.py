@@ -492,7 +492,7 @@ def windows_eval_coeffs(testY, predY, pred_peaks):
 
 	## The rest of the windows will be the true negatives
 	tn = testY.shape[0] - tn - fp - fn
-	print(testY.shape)
+	# print(testY.shape)
        
 	print(f'Spike-per-spike Method:\n true_positives  = {tp}\n false_positives = {fp}\n false_negatives = {fn}\n true_negatives  = {tn}')
 
