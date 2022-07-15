@@ -478,7 +478,7 @@ def windows_eval_coeffs(testY, predY, pred_peaks):
 		if predY[p] == 1:    #always 1 because of peaks()
 
 			# This spike-prediction is close enough to a spike movement (5 samples margin)
-			if sum(testY[p]) == 1:
+			if testY[p] == 1:
 				tp += 1
 			
 			# This spike-prediction refers to a non-spike movement

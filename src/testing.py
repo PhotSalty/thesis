@@ -95,7 +95,7 @@ for s in subjects:
 	print(f'\nSession of Subject {s}:\n')
 
 ## Extract the peaks of the positive class:
-	p, _ = find_peaks(pred_Y[:, 0], distance = 20)
+	p, _ = find_peaks(pred_Y[:, 0], distance = 10)
 	print(f'  peaks: {p.shape}')
 	print(f'  pred_Y: {pred_Y.shape}')
 
