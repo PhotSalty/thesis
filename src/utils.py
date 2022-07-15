@@ -478,7 +478,7 @@ def windows_eval_coeffs(testY, predY, pred_peaks):
 		if predY[p] == 1:    #always 1 because of peaks()
 
 			# This spike-prediction is close enough to a spike movement (5 samples margin)
-			if sum(testY[p-5:p+5]) >= 1:
+			if sum(testY[p]) == 1:
 				tp += 1
 			
 			# This spike-prediction refers to a non-spike movement
@@ -488,16 +488,13 @@ def windows_eval_coeffs(testY, predY, pred_peaks):
 	# #.false-negatives = #.all-true-peaks - #.correctly-predicted-peaks =>
 	# => fn = Test-peaks - tp
 	Test_peaks, _ = find_peaks(testY)
-	fn = sum(Test_peaks) - tp
+	fn = Test_peaks.shape[0] - tp
 
 	## The rest of the windows will be the true negatives
 	tn = testY.shape[0] - tn - fp - fn
 	print(testY.shape)
-
        
 	print(f'Spike-per-spike Method:\n true_positives  = {tp}\n false_positives = {fp}\n false_negatives = {fn}\n true_negatives  = {tn}')
-	
-
 
 	return tp, fp, fn, tn
 	

@@ -48,13 +48,13 @@ def labeling(dat, k, sbsr):
 	# axs[0].set_title("Accelerators 3D")
 
 names = ["gali", "sdrf", "sltn", "pasx", "anti", "komi", "fot", "agge", "conp", "LH_galios"]
-name = names[2]
+name = names[6]
 
 p = os.path.dirname(os.getcwd())
 
 p1 = p + sls + 'data' + sls + 'pickled_data' + sls
 datap = p1 + name + ".pkl"
-datap = p1 + name + '_old' + ".pkl"
+# datap = p1 + name + '_old' + ".pkl"
 
 with open(datap, 'rb') as f:
 	data = pkl.load(f)
