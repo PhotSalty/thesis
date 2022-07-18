@@ -36,7 +36,7 @@ for name in names:
 	tag = '0' + str(n+1)
 	spikes, acc, ang, windows = data_load(name, tag)
 	sgnl = [acc, ang]
-	a = 11 #np.random.randint(len(spikes))
+	a = 15 #np.random.randint(len(spikes))
 	strt_wide = int(spikes[a, 0] - 400)
 	stp_wide = int(spikes[a, 1] + 400)
 	strt_stp = [int(spikes[a, 0]), int(spikes[a, 1])]
