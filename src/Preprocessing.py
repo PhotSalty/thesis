@@ -38,24 +38,24 @@ stds = stds_raw
 p = os.path.dirname(os.getcwd())
 p1 = p + sls + 'data' + sls + 'pickle_output' + sls
 
-data_raw = p1 + 'raw_data' + str(len(names)) + '-test.pkl'
-data_aug = p1 + 'aug_data' + str(len(names)) + '-test.pkl'
+data_raw = p1 + 'raw_data' + str(len(names)) + '.pkl'
+data_aug = p1 + 'aug_data' + str(len(names)) + '.pkl'
 
 with open(data_raw, 'wb') as f:
-	pkl.dump(wds_raw, f)
-	pkl.dump(lbl_raw, f)
-	pkl.dump(tg_raw, f)
-	pkl.dump(tmst_raw, f)
-	pkl.dump(means, f)
-	pkl.dump(stds, f)
+        pkl.dump(wds_raw, f)
+        pkl.dump(lbl_raw, f)
+        pkl.dump(tg_raw, f)
+        pkl.dump(tmst_raw, f)
+        pkl.dump(means, f)
+        pkl.dump(stds, f)
 
 with open(data_aug, 'wb') as f:
-	pkl.dump(wds_aug, f)
-	pkl.dump(lbl_aug, f)
-	pkl.dump(tg_aug, f)
-	pkl.dump(tmst_aug, f)
-	pkl.dump(means, f)
-	pkl.dump(stds, f)
+        pkl.dump(wds_aug, f)
+        pkl.dump(lbl_aug, f)
+        pkl.dump(tg_aug, f)
+        pkl.dump(tmst_aug, f)
+        pkl.dump(means, f)
+        pkl.dump(stds, f)
 
 
 # print(f'\n\nRaw standardization parameters:\n Means = {means_raw}\n Stds = {stds_raw}')
@@ -65,10 +65,10 @@ with open(data_aug, 'wb') as f:
 # print(wds_raw.shape, wds_aug.shape)
 
 # with open(data_raw, 'rb') as f:
-# 	wds1 = pkl.load(f)
-# 	lbl1 = pkl.load(f)
-# 	tg1 = pkl.load(f)
-# 	tmst1 = pkl.load(f)
+#       wds1 = pkl.load(f)
+#       lbl1 = pkl.load(f)
+#       tg1 = pkl.load(f)
+#       tmst1 = pkl.load(f)
 
 # fig, axs = plt.subplots(2)
 # axs[0].plot(wds1[300, :, 0])
@@ -78,10 +78,10 @@ with open(data_aug, 'wb') as f:
 
 
 # def comp(A, B, s):
-# 	if np.array_equal(A,B):
-# 		print(f'{s} Yey!')
-# 	else:
-# 		print(f'{s} Ney!')
+#       if np.array_equal(A,B):
+#               print(f'{s} Yey!')
+#       else:
+#               print(f'{s} Ney!')
 
 # ss = ['Windows', 'Labels', 'Tags', 'Timestamps']
 # comp(wds1, wds, ss[0])
