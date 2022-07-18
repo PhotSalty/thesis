@@ -108,6 +108,7 @@ def LOSO_training(num_of_epochs, mdl_path):
                 while flag:
                         rnd = np.random.randint(0, np.shape(subjects)[0]-1)
                         s_val = subjects[rnd]
+                        
                         if s_val != s:
                                 flag = False
 
@@ -151,7 +152,7 @@ def LOSO_training(num_of_epochs, mdl_path):
                 in_shape = windows.shape[1:]
 
         ## Model:
-                this_optimizer = RMSprop()
+                # this_optimizer = RMSprop()
 
                 model = Sequential()
                 model.add(Conv1D(filters=32, kernel_size=5, padding='same', activation='relu', input_shape=in_shape))
@@ -169,9 +170,9 @@ def LOSO_training(num_of_epochs, mdl_path):
                 model.add(Dropout(0.5))
                 model.add(Dense(1, activation='sigmoid'))
                 
-                # model.compile(loss='binary_crossentropy', optimizer='RMSProp', metrics=['accuracy'])
-                model.compile(loss='binary_crossentropy', optimizer=this_optimizer, metrics=['accuracy'])
-                model.summary()
+                model.compile(loss='binary_crossentropy', optimizer='RMSProp', metrics=['accuracy'])
+                # model.compile(loss='binary_crossentropy', optimizer=this_optimizer, metrics=['accuracy'])
+                # model.summary()
 
         ## No need to balance class weights, because of balanced data (augmentation)
                 # num_of_classes = np.unique(labels)    #[0, 1]
@@ -181,7 +182,7 @@ def LOSO_training(num_of_epochs, mdl_path):
                 history = model.fit(x=Train_X, y=Train_Y, epochs=num_of_epochs, verbose = 2, class_weight=None, validation_data = Val_data)
 
                 fig, axs = plt.subplots(2)
-                fig.suptitle(f'Subject out: {s}')
+                fig.suptitle(f'Subject out: {s} , Validation subject: {s_val}')
                 #  "Accuracy"
                 axs[0].plot(history.history['accuracy'])
                 axs[0].plot(history.history['val_accuracy'])
