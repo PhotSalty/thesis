@@ -38,8 +38,8 @@ stds = stds_raw
 p = os.path.dirname(os.getcwd())
 p1 = p + sls + 'data' + sls + 'pickle_output' + sls
 
-data_raw = p1 + 'raw_data' + str(len(names)) + '.pkl'
-data_aug = p1 + 'aug_data' + str(len(names)) + '.pkl'
+data_raw = p1 + 'raw_data' + str(len(names)) + '_no_ssjs.pkl'
+data_aug = p1 + 'aug_data' + str(len(names)) + '_no_ssjs.pkl'
 
 with open(data_raw, 'wb') as f:
         pkl.dump(wds_raw, f)
