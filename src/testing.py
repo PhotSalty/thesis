@@ -5,7 +5,7 @@ from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_sc
 
 p = os.path.dirname(os.getcwd())
 p1 = p + sls + 'data' + sls + 'pickle_output' + sls
-datapkl = p1 + 'raw_data' + str(sys.argv[2]) + '.pkl'
+datapkl = p1 + 'raw_data' + str(sys.argv[2]) + '_no_ssjs.pkl'
 
 ## Create testing figures path
 #epochs = 10
@@ -92,7 +92,7 @@ for s in subjects:
 	pred_Y, Test_Y = test_subject(s)
 
 ## Random threshold pick = 0.8	
-	pred_Y = np.where(pred_Y < 0.8, 0, 1)
+	pred_Y = np.where(pred_Y < 0.6, 0, 1)
 	print(f'\nSession of Subject {s}:\n')
 
 ## Extract the peaks of the positive class:
