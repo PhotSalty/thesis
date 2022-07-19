@@ -73,7 +73,7 @@ class recording:
 
         def read_data(self):
                 p = os.path.dirname(os.getcwd())
-                p1 = p + sls + 'data' + sls + 'pickled_data' + sls
+                p1 = p + sls + 'data' + sls + 'pickled_data_no_ssjs' + sls
                 p2 = p + sls + 'data' + sls + 'recordings' + sls
                 datap = p1 + self.name + ".pkl"
                 
