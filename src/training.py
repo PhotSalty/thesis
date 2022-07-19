@@ -8,7 +8,7 @@ import tensorflow as ts
 
 p = os.path.dirname(os.getcwd())
 p1 = p + sls + 'data' + sls + 'pickle_output' + sls
-datapkl = p1 + 'aug_data' + str(sys.argv[2]) + '.pkl'
+datapkl = p1 + 'aug_data' + str(sys.argv[2]) + '_no_ssjs.pkl'
 
 with open(datapkl, 'rb') as f:
         windows = pkl.load(f)
