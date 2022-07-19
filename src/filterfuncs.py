@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 ## Functions:
 def read_data(name, sls):
 	p = os.path.dirname(os.getcwd())
-	p1 = p + sls + 'data' + sls + 'pickled_data' + sls
+	p1 = p + sls + 'data' + sls + 'pickled_data_no_ssjs' + sls
 	p2 = p + sls + 'data' + sls + 'recordings' + sls
 	datap = p1 + name + ".pkl"
 	# datap = "C:\\Users\\30698\\Thesis_Fotis\\thesis\\data\\pickled_data\\" + name + ".pkl"
