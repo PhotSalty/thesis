@@ -18,7 +18,7 @@ pkl_path = base_path + sls + 'data' + sls + 'pickle_output' + sls
 ## Model Training
 
 # 1. Retrieve augmented data
-pkl_path += 'aug_data_' + str(n_subjects) + file_folder + '.pkl'
+pkl_path += 'aug_data_' + str(n_subjects) + '_' + file_folder + '.pkl'
 with open(pkl_path, 'rb') as f:
         windows = pkl.load(f)
         labels = pkl.load(f)
@@ -63,7 +63,7 @@ else:
 ## Model Testing
 
 # 1. Retrieve original - raw data
-pkl_path += 'raw_data_' + str(n_subjects) + file_folder + '.pkl'
+pkl_path = base_path + sls + 'data' + sls + 'pickle_output' + sls + 'raw_data_' + str(n_subjects) + '_' + file_folder + '.pkl'
 with open(pkl_path, 'rb') as f:
         windows = pkl.load(f)
         labels = pkl.load(f)
