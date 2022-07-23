@@ -189,7 +189,7 @@ def LOSO_training_val(windows, labels, tag, means, stds, epochs, n_subjects, mdl
 		axs[1].legend(['train', 'validation'])
 
 	# Save model and its figures
-		model_path = mdl_path + 'M' + st + '_' + n_subjects + '.mdl'
+		model_path = mdl_path + 'M' + st + '_' + str(n_subjects) + '.mdl'
 		figure_path = mdl_path + 'Training_figures' + sls
 
 		if not os.path.exists(figure_path):
@@ -197,7 +197,7 @@ def LOSO_training_val(windows, labels, tag, means, stds, epochs, n_subjects, mdl
 
 		model.save(filepath = model_path)
 
-		figure_path += 'M' + st + '_' + n_subjects + '.pdf'
+		figure_path += 'M' + st + '_' + str(n_subjects) + '.pdf'
 		fig.savefig(figure_path)
 
 	return val_list
@@ -303,7 +303,7 @@ def LOSO_training_noval(windows, labels, tag, means, stds, epochs, n_subjects, m
 		axs[1].legend(['train'])
 
 	# Save model and its figures
-		model_path = mdl_path + 'M' + st + '_' + n_subjects + '.mdl'
+		model_path = mdl_path + 'M' + st + '_' + str(n_subjects) + '.mdl'
 		figure_path = mdl_path + 'Training_figures' + sls
 
 		if not os.path.exists(figure_path):
@@ -311,7 +311,7 @@ def LOSO_training_noval(windows, labels, tag, means, stds, epochs, n_subjects, m
 
 		model.save(filepath = model_path)
 
-		figure_path += 'M' + st + '_' + n_subjects + '.pdf'
+		figure_path += 'M' + st + '_' + str(n_subjects) + '.pdf'
 		fig.savefig(figure_path)
 
 
