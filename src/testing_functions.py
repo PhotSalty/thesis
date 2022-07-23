@@ -48,7 +48,7 @@ def LOSO_testing(windows, labels, tag, means, stds, epochs, n_subjects, mdl_path
 		Test_X = apply_standardization(windows = Test_X, means = means, stds = stds)
 
 	# Define model path
-		model_path = mdl_path + 'M' + st + '_' + n_subjects + '.mdl'
+		model_path = mdl_path + 'M' + st + '_' + str(n_subjects) + '.mdl'
 
 	# Load model and perform testing
 		model = load_model(model_path)
@@ -59,7 +59,7 @@ def LOSO_testing(windows, labels, tag, means, stds, epochs, n_subjects, mdl_path
 
 	# Find positive-class peaks, in order to eliminate multiple "positive" windows for one spike
 		p, _ = find_peaks(Pred_Y[:, 0], distance = 20)
-		pos_pred = np.where(Pred_Y == 1)
+		pos_pred = np.asarray(np.where(Pred_Y == 1))
 		print(f'\n\tCalculated {p.shape} Peaks, out of {pos_pred.shape} positive windows'.expandtabs(4))
 
 	# Construct and save a plot for the prediction results
