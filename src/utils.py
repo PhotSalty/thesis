@@ -44,7 +44,7 @@ def case_selection():
         print(f'''\n
 > Select spike annotation method:
 
-\t1. WITH slow-shots and WITH jump_services
+\t1. WITH slow-shots and WITH jump-services
 
 \t2. WITH slow-shots but WITHOUT jump_services
 
@@ -352,10 +352,11 @@ def subjects_init(names):
                 spikes_length = subjects[i].spikes[:,1] - subjects[i].spikes[:,0]
                 # spikes_length = spikes_length * subjects[i].fs				# multiplied with freq in order to convert time to samples
                 # subjects_spike_length.append(np.mean(spikes_length))
-                subjects_spike_length.append(spikes_length)
+                subjects_spike_length.extend(spikes_length)
         
-        # Extract average spike-length of all subjects
-        window_length = round(np.mean(subjects_spike_length)) #, dtype=np.int64)
+        # Extract mean/median spike-length of all subjects
+        # window_length = round(np.mean(subjects_spike_length)) #, dtype=np.int64)
+        window_length = round(np.median(subjects_spike_length)) #, dtype=np.int64)
         # print(window_length)
         
         for i in np.arange(len(names)):
@@ -396,6 +397,10 @@ def display_base_stats(subjects):
         # Number of spikes:
         nspks = np.shape(spikes_sample_length)[0]
 
+        # Window length selected as the median/mean of spikes length
+        wd_len = round(np.median(spikes_sample_length))
+        # wd_len = round(np.mean(spikes_sample_length))
+
         print(f'''
 
 > Base statistical analysis - {nspks} Spikes recorded
@@ -410,7 +415,7 @@ def display_base_stats(subjects):
 
 \t Median Spike length   ->   {np.median(spikes_time_length):.3f} sec, {np.median(spikes_sample_length):.3f} samples
   /
-\/  Selected window length   ->   {round(np.mean(spikes_sample_length))/64:.3f} sec, {round(np.mean(spikes_sample_length)):.3f} samples
+\/  Selected window length   ->   {wd_len/64:.3f} sec, {wd_len:.3f} samples
 '''.expandtabs(6))
 
 
