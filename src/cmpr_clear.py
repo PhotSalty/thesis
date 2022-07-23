@@ -1,66 +1,78 @@
+
 from utils import *
 
-def pltit(i, sgnl): # , axs, fotis_hits, acc):
+def plotit(i, sgnl):
+# j = 0  ->  Accelerometer signal
+# j = 1  ->  Angularrate signal
 	for j in [0,1]:
+
 		axs[i][j].grid()
 		axs[i][j].set_facecolor('lightgrey')
-		axs[i][j].plot(np.arange(start = strt_wide, stop = stp_wide), sgnl[j][strt_wide:stp_wide], lw = .5)
-		axs[i][j].fill_between(x = strt_stp, y1 = -3000*j - 15, y2 = 3000*j + 15, color = 'white')
-		# plt.axhline(y = 13.100000000000001, xmin = sf[0], xmax = sf[1], color = 'red', lw = 1)
-		if j:
-			axs[i][j].set_ylabel("deg/sec")
-			axs[i][j].set_title(name + " Ang " + "spike")
-		else:
-			axs[i][j].set_ylabel("g")
-			axs[i][j].set_title(name + " Acc " + "spike")
-		axs[i][j].legend(["X","Y","Z"])
 
+	# Plot the wide part of the signal:
+		axs[i][j].plot(np.arange(start = strt_wide, stop = stp_wide), sgnl[j][strt_wide:stp_wide], lw = .5)
+		
+	# Annotate white only the background of the spike-signal
+		axs[i][j].fill_between(x = strt_stp, y1 = -3000*j - 15, y2 = 3000*j + 15, color = 'white')
+	
+	# Set labels
+		if j:
+			axs[i][j].set_ylabel('deg/sec')
+			axs[i][j].set_title(name + ' Ang ' + 'spike')
+		else:
+			axs[i][j].set_ylabel('g')
+			axs[i][j].set_title(name + ' Acc ' + 'spike')
+		
+		axs[i][j].legend(['X','Y','Z'])
+
+
+# def data_load(name, tag, wdlen):
 def data_load(name, tag):
+
 	subj = recording(name = name, tag = tag)
 	subj.read_data()
 	subj.filtering()
-	subj.windowing(subj.filt_acc, subj.filt_ang, subj.spikes, wdlen)
+	# subj.windowing(subj.filt_acc, subj.filt_ang, subj.spikes, wdlen)
 
-	return subj.spikes, subj.filt_acc, subj.filt_ang, subj.windows
 	# return subj.spikes, subj.raw_acc, subj.raw_ang, subj.windows
+	return subj.spikes, subj.filt_acc, subj.filt_ang, subj.windows
 
 
-names = ["sltn", "gali", "sdrf", "pasx", "anti", "komi", "fot", "agge", "conp", "LH_galios"]
-wdlen = window_length(names, sls)
+names = np.array(['sltn', 'gali', 'sdrf', 'pasx', 'anti', 'komi', 'fot', 'agge', 'conp', 'LH_galios'])
 
-names = ['sdrf', 'LH_galios']
+# Window length of all subjects
+#window_length = calc_window_length(names)
 
-fig, axs = plt.subplots(np.shape(names)[0], 2)
-n = 0
-for name in names:
-	tag = '0' + str(n+1)
+# Indices of names to compare
+cp_ind = np.asarray( [2, 9] )
+
+names_cmpr = names[ cp_ind ]
+
+fig, axs = plt.subplots(len(names_cmpr), 2)
+
+for i, name in zip(np.arange(len(names_cmpr)), names_cmpr):
+
+	if cp_ind[i] < 9:
+		tag = '0' + str(cp_ind[i]+1)
+	else:
+		tag = str(cp_ind[i]+1)
+	
+# Load and process recording data
+	#spikes, acc, ang, windows = data_load(name, tag, window_length)
 	spikes, acc, ang, windows = data_load(name, tag)
-	sgnl = [acc, ang]
-	a = 15 #np.random.randint(len(spikes))
-	strt_wide = int(spikes[a, 0] - 400)
-	stp_wide = int(spikes[a, 1] + 400)
-	strt_stp = [int(spikes[a, 0]), int(spikes[a, 1])]
-	pltit(n, sgnl)
-	n += 1
 
+# Subject's signals and spike to plot
+	sbj_signal = [acc, ang]
+	n_spk = 0 #np.random.randint(len(spikes))
+	
+# Start - stop indices of the recording signal, +/-400 samples arround the selected spike - [wide part]
+	strt_wide = int(spikes[n_spk, 0] - 400)
+	stp_wide = int(spikes[n_spk, 1] + 400)
+
+# Start - stop indices of the recording signal, strictly arround the spike
+	strt_stp = [int(spikes[n_spk, 0]), int(spikes[n_spk, 1])]
+	
+	plotit(i, sbj_signal)
+	
 
 plt.show()
-
-
-# print(np.where(acc[1] == np.amax(acc[1])))
-#print(np.amax(acc[:,0]), np.amax(acc[:,1]), np.amax(acc[:,2]))
-
-# # Spikes has 4 columns:
-# # arm-swing, last ground contact, first ground contact, 2 feet on the ground
-# # [0, 1, 2, 3] START: [0 or 1] , END: [2 or 3]
-# spks = spikes[:, [1,2]] * 64
-# blcks = blocks * 64
-# srvs = services * 64
-
-# s_b_sr = [0, 1, 2]
-# for i in s_b_sr:
-# 	fig, axs = plt.subplots(2)
-# 	cmp(acc, 0, i)
-# 	cmp(ang, 1, i)
-
-# plt.show()
