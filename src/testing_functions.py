@@ -73,12 +73,12 @@ def LOSO_testing(windows, labels, tag, means, stds, epochs, n_subjects, mdl_path
 		fig.savefig(fig_path + 'Subj' + st + '.pdf')
 
 	# Calculate evaluation coefficients spike-per-spike
-		tp_sps, fp_sps, fn_sps, tn_sps = windows_eval_coeffs(testY = Test_Y, predY = pred_Y, pred_peaks = p)
+		tp_sps, fp_sps, fn_sps, tn_sps = windows_eval_coeffs(testY = Test_Y, predY = Pred_Y, pred_peaks = p)
 		cms = np.array([[tn_sps, fp_sps], [fn_sps, tp_sps]])
 		cm_sps.append(cms)
 
 	# Calculate evaluation coefficients window-pre-window
-		cmw = confusion_matrix(y_true = Test_Y, y_pred = pred_Y)
+		cmw = confusion_matrix(y_true = Test_Y, y_pred = Pred_Y)
 		# tn_wpw, fp_wpw, fn_wpw, tp_wpw = cmw.ravel()
 		cm_wpw.append(cmw)
 
