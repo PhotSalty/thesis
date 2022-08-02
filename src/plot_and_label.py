@@ -1,6 +1,6 @@
 from utils import *
 
-def labeling_samples(dat, k, axs, spks):
+def labeling_samples(dat, k, axs, spks, stp):
 	# plot signal with grey background:
 	axs[k].plot(np.arange(len(dat)), dat, lw=.5)
 	axs[k].set_facecolor('lightgrey')
@@ -16,40 +16,49 @@ def labeling_samples(dat, k, axs, spks):
 
 	axs[k].set_xlabel('samples')
 	
+	# define annotation bound
+	if stp == 'raw':
+		ab = 2600
+		ext = 17
+	elif stp == 'filt':
+		ab = 900
+		ext = 6.5
+
 	# annotate spikes
 	j = 1
 	for i in spks:
-		axs[k].fill_between(x = i, y1 = -3000*k - 15, y2 = 3000*k + 15, color = 'white')
-		axs[k].annotate(str(j), (i[0] + (i[1]-i[0])/2 - 1,  -3000*k -15), color = 'black')
+		axs[k].fill_between(x = i, y1 = -ab*k - ext, y2 = ab*k + ext, color = 'white')
+		axs[k].annotate(str(j), (i[0] + (i[1]-i[0])/2 - 1,  -ab*k - ext), color = 'black')
 		j = j + 1
 
 	
-def plotlab_samples(name, tag, show):
+def plotlab_samples(name, tag, show, stype):
 
 	subject = recording(name, tag)
 	subject.read_data()
 	subject.filtering()
 
 	spk = subject.spikes
-	# filtered:
-	acc = subject.filt_acc
-	ang = subject.filt_ang
 	
-	# raw:
-	# acc = subject.raw_acc
-	# ang = subject.raw_ang
+	# Initialize signal, based on requested type
+	if stype == 'filt':
+		acc = subject.filt_acc
+		ang = subject.filt_ang
+	elif stype == 'raw':
+		acc = subject.raw_acc
+		ang = subject.raw_ang
 
 	fig, axs = plt.subplots(2)
 	fig.suptitle(f'Spikes of Subject <{name}>')
-	labeling_samples(acc, 0, axs, spk)
-	labeling_samples(ang, 1, axs, spk)
+	labeling_samples(acc, 0, axs, spk, stype)
+	labeling_samples(ang, 1, axs, spk, stype)
 
 	if show:
 		plt.show()
 
 
 
-def labeling_seconds(dat, k, axs, spks):
+def labeling_seconds(dat, k, axs, spks, stp):
 	freq = 64	# Hz
 	t = np.arange(len(dat)/freq, step = 1/freq)
 
@@ -67,33 +76,42 @@ def labeling_seconds(dat, k, axs, spks):
 
 	axs[k].set_xlabel('seconds')
 	
-	# annotate spikes
+	# define annotation bound
+	if stp == 'raw':
+		ab = 2600
+		ext = 17
+	elif stp == 'filt':
+		ab = 900	
+		ext = 6.5
+
 	j = 1
+	# annotate spikes
 	for i in spks:
-		axs[k].fill_between(x = i, y1 = -3000*k - 15, y2 = 3000*k + 15, color = 'white')
-		axs[k].annotate(str(j), (i[0] + (i[1]-i[0])/2 - 1,  -3000*k -15), color = 'black')
+		axs[k].fill_between(x = i, y1 = -ab*k - ext, y2 = ab*k + ext, color = 'white')
+		axs[k].annotate(str(j), (i[0] + (i[1]-i[0])/2 - 1,  -ab*k - ext), color = 'black')
 		j = j + 1
 
 	
-def plotlab_seconds(name, tag, show):
+def plotlab_seconds(name, tag, show, stype):
 
 	subject = recording(name, tag)
 	subject.read_data()
 	subject.filtering()
 
 	spk = subject.spikes / 64
-	# filtered:
-	acc = subject.filt_acc
-	ang = subject.filt_ang
-	
-	# raw:
-	# acc = subject.raw_acc
-	# ang = subject.raw_ang
+
+	# Initialize signal, based on requested type
+	if stype == 'filt':
+		acc = subject.filt_acc
+		ang = subject.filt_ang
+	elif stype == 'raw':
+		acc = subject.raw_acc
+		ang = subject.raw_ang
 
 	fig, axs = plt.subplots(2)
 	fig.suptitle(f'Spikes of Subject <{name}>')
-	labeling_seconds(acc, 0, axs, spk)
-	labeling_seconds(ang, 1, axs, spk)
+	labeling_seconds(acc, 0, axs, spk, stype)
+	labeling_seconds(ang, 1, axs, spk, stype)
 
 	if show:
 		plt.show()
@@ -166,22 +184,42 @@ elif subj_number == 10:
 
 flag = False
 while not flag:
-	print(f'''\n
-> Do you want x-axis to be labeled:
+	print(f'''
+> Signal should be:
 
-\t1. in seconds
+\t1. original
 
-\t2. in samples?\n'''.expandtabs(6))
+\t2. filtered\n'''.expandtabs(6))
 
-	pltmethod = int(input(f'  Please, type only the plot-method\'s number (1 or 2): '))
-	if pltmethod == 1:
+	sgntype = str(int(input(f'  Please, type only the signal-type\'s number (1 or 2): ')))
+	if sgntype == '1':
+		sgntype = 'raw'
 		flag = True
-		plotlab_seconds(name, tag, show = True)
-	elif pltmethod == 2:
+	elif sgntype == '2':
+		sgntype = 'filt'
 		flag = True
-		plotlab_samples(name, tag, show = True)
 	else:
 		clear()
 		print(f'\n  Wrong input, please try again.')
 
-print(' ')
+flag = False
+while not flag:
+	print(f'''\n
+> X-axis should be labeled:
+
+\t1. in seconds
+
+\t2. in samples\n'''.expandtabs(6))
+
+	pltmethod = int(input(f'  Please, type only the plot-method\'s number (1 or 2): '))
+	if pltmethod == 1:
+		flag = True
+		plotlab_seconds(name, tag, show = True, stype = sgntype)
+	elif pltmethod == 2:
+		flag = True
+		plotlab_samples(name, tag, show = True, stype = sgntype)
+	else:
+		clear()
+		print(f'\n  Wrong input, please try again.')
+
+print('')

@@ -34,8 +34,7 @@ elif psys == 'Windows':
         clear = lambda: os.system('cls')
         print(f'\n\tWindows clear cmd command = \'cls\''.expandtabs(6))
 else:
-        print(f'\n\tPaths are constructed for Linux or Windows Operating Systems'.expandtabs(6))
-        print(f'\n\tCheck utils.py'.expandtabs(6))
+        sys.exit(f'\n > Not supported Operating System [Linux, Windows]\n > Please, check utils.py')
 
 
 
