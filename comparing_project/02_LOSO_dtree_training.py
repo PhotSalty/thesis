@@ -80,65 +80,6 @@ for i in np.arange(len(names)):
 
 plt.show()
 
-'''
-        Isws sto Preprocessing, tha prepei na etoimasw:
-
-                - s_origin, s_auxiliary
-                - labels according to spikes
-                - e_impact according to spikes mean amplitude ~ or mb same
-                - swing-interval in samples
-        
-        kai se kathe LOSO iteration na exw etoima signal_samples + sample_labels 
-        gia to DecisionTree training, alla kai gia to testing
-        
-'''
-# events = np.empty((10, 2), dtype = object)
-# ex = e_impact.iloc[0, 0]
-# ey = e_impact.iloc[0, 1]
-# ez = e_impact.iloc[0, 2]
-
-# for s, so, pos in zip(s_auxi, s_orig, np.arange(len(s_orig))):
-
-#       for i in np.arange(s.shape[0]):
-                
-#               # current subject events
-#               temp_events = []
-        
-#               # auxiliary signal values
-#               x = np.abs(s[i, 0])
-#               y = np.abs(s[i, 1])
-#               z = np.abs(s[i, 2])
-                
-#               # original signal values
-#               xo = np.abs(so[i, 0])
-#               yo = np.abs(so[i, 1])
-#               zo = np.abs(so[i, 2])
-                
-
-#               if x >= ex and y >= ey and z >= ez:
-                        
-#                       # Amplitude indicator
-#                       ampl_ind = np.asarray([xo, yo, zo])
-                        
-#                       # Swing movement average indicator
-#                       swing_mv = np.asarray(np.arange(start = i - swing_interval, stop = i))
-#                       swng_ind = np.asarray(np.mean(so[swing_mv]))
-
-# #             
-# #  flag = decision_tree(ind1 = ampl_ind, ind2 = swng_ind)
-# #
-# #  if flag:
-# #  
-# #      temp_events.append(i) -> append position of event
-# #
-                
-#       events[pos, 0] = temp_events
-#       events[pos, 1] = names[pos]
+''' from decision tree's positive predictions, we calculate spikes as a 4 second item '''
 
 
-# '''
-#       > Scikit-learn's DecisionTree() algorithm will be used.
-                
-#               - It is based on CART algorithm, which is quite similar
-#                 to C4.5, which is proposed
-# '''
