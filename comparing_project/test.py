@@ -1,6 +1,9 @@
+from asyncio.windows_events import NULL
 import numpy as np
 import pandas as pd
 from scipy.signal import argrelextrema
+from matplotlib import pyplot as plt
+import pickle as pkl
 
 def dataframe_test():
 	names = np.array(['sltn', 'gali', 'sdrf', 'pasx', 'anti', 'komi', 'fot', 'agge', 'conp', 'LH_galios'])
@@ -45,4 +48,31 @@ def conc2d():
 	c = np.concatenate((a, b), axis = 1)
 	print(c)
 
-conc2d()
+def plotpklsave():
+
+	fig = np.zeros(5, dtype = object)
+	for i in np.arange(5):
+
+		a = np.linspace(0, 2000, 15*(i+1))
+		b = np.sin(a)
+
+		fig[i] = plt.figure(f'figure <{i}>')
+		plt.plot(a, b)
+		plt.title(f'<{i}>')
+
+
+	with open('figtest.pkl', 'wb') as f:
+		pkl.dump(fig, f)
+
+	with open('figtest.pkl', 'rb') as f1:
+		fig1 = pkl.load(f1)
+
+	
+	for i in np.arange(5):
+		plt.figure(fig1[i])
+		plt.close(fig[i])
+	
+	
+	plt.show()
+
+plotpklsave()

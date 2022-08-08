@@ -33,6 +33,10 @@ def LOSO_testing(windows, labels, tag, means, stds, epochs, n_subjects, mdl_path
 	cm_sps = []
 	cm_wpw = []
 
+# figure list for pickle	
+	fig = np.zeros(10, dtype = object)
+	fi = 0
+
 # LOSO iterations through subjects
 	for st in subject_tags:
 
@@ -63,14 +67,14 @@ def LOSO_testing(windows, labels, tag, means, stds, epochs, n_subjects, mdl_path
 		print(f'\n\tCalculated {p.shape} Peaks, out of {pos_pred.shape} positive windows'.expandtabs(4))
 
 	# Construct and save a plot for the prediction results
-		fig = plt.figure('Testing figure ' + st)
+		fig[fi] = plt.figure('Testing figure ' + st)
+		fi += 1
 		plt.suptitle(f'Subject <{st}>', fontsize = 24, y = 1)
 		plt.title(f'Comparing ground-truth labels with predictions')
 		plt.plot(Pred_Y, color = 'orange')
 		plt.plot(Test_Y, color = 'blue', alpha = 0.5)
 		plt.plot(p, Pred_Y[p, 0], 'x', color = 'green', linewidth = 1.5)
-
-		fig.savefig(fig_path + 'Subj' + st + '.pdf')
+		# fig.savefig(fig_path + 'Subj' + st + '.pdf')
 
 	# Calculate evaluation coefficients spike-per-spike
 		tp_sps, fp_sps, fn_sps, tn_sps = windows_eval_coeffs(testY = Test_Y, predY = Pred_Y, pred_peaks = p)
@@ -89,6 +93,9 @@ def LOSO_testing(windows, labels, tag, means, stds, epochs, n_subjects, mdl_path
 		print_metrics(acc, prec, rec, f1s, 'Window-per-window')
 
 	
+	with open(fig_path + 'tstfig.pkl', 'wb') as f:
+		pkl.dump(fig, f)
+		
 	print(f'\n Confusion matrices of {subject_tags.shape[0]} subjects')
 
 # Total Confusion matrices and evaluation:
