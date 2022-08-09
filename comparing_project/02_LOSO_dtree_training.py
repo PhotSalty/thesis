@@ -62,7 +62,7 @@ for i in np.arange(len(names)):
         alg = tree.DecisionTreeClassifier()
 
         # def metacost_training()
-        C = np.array([[0, 1000], [0, 0]])
+        C = np.array([[0, 0], [1000, 0]])
         S = pd.DataFrame(Train_X, columns = ['indi1', 'indi2', 'indi3', 'indi4', 'indi5', 'indi6'])
         S['Target'] = Train_Y
         model = MetaCost(S, alg, C).fit('Target', 3)
@@ -72,13 +72,15 @@ for i in np.arange(len(names)):
 
         prob = model.predict(Test_X)
 
-        plt.figure(f'Subject {i} out')
-        plt.plot(Test_Y, color = 'orange')
-        plt.plot(prob, color = 'blue', alpha = 0.5)
-        plt.legend(['labels', 'predictions'], loc = 'upper left')
+
+
+        # plt.figure(f'Subject {i} out')
+        # plt.plot(Test_Y, color = 'orange')
+        # plt.plot(prob, color = 'blue', alpha = 0.5)
+        # plt.legend(['labels', 'predictions'], loc = 'upper left')
         # plt.show()
 
-plt.show()
+# plt.show()
 
 ''' from decision tree's positive predictions, we calculate spikes as a 4 second item '''
 
