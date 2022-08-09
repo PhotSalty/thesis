@@ -101,8 +101,8 @@ def LOSO_testing(windows, labels, tag, means, stds, epochs, n_subjects, mdl_path
 		acc, prec, rec, f1s = calculate_metrics(cm = cmw)
 		print_metrics(acc, prec, rec, f1s, 'Window-per-window')
 		
-		wacc = balanced_accuracy_score(Test_Y, Pred_Y)
-		print(f'\nWeighted accuracy = {wacc}\n')
+		# wacc = balanced_accuracy_score(Test_Y, Pred_Y)
+		# print(f'\nWeighted accuracy = {wacc}\n')
 
 		# is1_tot += is1
 		# is0_tot += is0
