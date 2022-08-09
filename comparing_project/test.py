@@ -1,4 +1,3 @@
-from asyncio.windows_events import NULL
 import numpy as np
 import pandas as pd
 from scipy.signal import argrelextrema
@@ -60,19 +59,39 @@ def plotpklsave():
 		plt.plot(a, b)
 		plt.title(f'<{i}>')
 
-
 	with open('figtest.pkl', 'wb') as f:
 		pkl.dump(fig, f)
 
 	with open('figtest.pkl', 'rb') as f1:
 		fig1 = pkl.load(f1)
 
-	
 	for i in np.arange(5):
 		plt.figure(fig1[i])
 		plt.close(fig[i])
 	
-	
 	plt.show()
 
-plotpklsave()
+def waccur():
+	
+	# target = np.random.randint(0, 2, 100, dtype = np.int8)
+	target = np.zeros(100, dtype = np.int8)
+	target[1], target[23], target[82] = 1, 1, 1
+	pred   = np.random.randint(0, 2, 100, dtype = np.int8)
+
+	from sklearn.metrics import balanced_accuracy_score, confusion_matrix, accuracy_score
+
+	cm = confusion_matrix(target, pred, labels = [0, 1])
+	wgt = 97/3
+	is1 = np.count_nonzero(target)
+	print(is1)
+	wgt1 = (np.shape(target)[0] - is1) / is1
+
+	print(f'\nWeight = {wgt}, calculated = {wgt1}\n')
+	wacc_cst = (cm[0, 0] + cm[1, 1]*wgt) / ( (cm[1, 1] + cm[1, 0])*wgt + cm[0, 0] + cm[0, 1] )
+
+	acc = accuracy_score(target, pred)
+	wacc = balanced_accuracy_score(target, pred)
+
+	print(acc, wacc, wacc_cst)
+
+waccur()
