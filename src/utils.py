@@ -713,7 +713,7 @@ def windows_eval_coeffs(testY, predY, pred_peaks):
         
 
 # 2. Calculate metrics out of a confusion matrix
-def calculate_metrics(cm, wgt):
+def calculate_metrics(cm):
 
         cm_df = pd.DataFrame(cm, 
                 columns = ['Predicted Negative', 'Predicted Positive'],
@@ -723,8 +723,15 @@ def calculate_metrics(cm, wgt):
         
         tn, fp, fn, tp = cm.ravel()
         
+        '''
+        > weighted accuracy:
+
+                wacc = (tp_rate + tn_rate) / 2  =  ( (tp / (tp + fn)) + (tn / (tn + fp)) ) / 2
+
+        '''
         # Acc  = (tp + tn) / (tp + tn + fp + fn)
-        Acc  = (tp*wgt + tn) / ((tp + fn)*wgt + fp + tn)
+        # Acc  = (tp*wgt + tn) / ((tp + fn)*wgt + fp + tn)      # equal method
+        Acc  = ( (tp / (tp + fn)) + (tn / (tn + fp)) ) / 2
         Prec = tp / (tp + fp)
         Rec  = tp / (tp + fn)
         F1s  = 2 * (Prec * Rec) / (Prec + Rec)

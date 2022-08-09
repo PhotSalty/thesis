@@ -37,9 +37,9 @@ def LOSO_testing(windows, labels, tag, means, stds, epochs, n_subjects, mdl_path
 	fig = np.zeros(10, dtype = object)
 	fi = 0
 
-# Balanced accuracy total weight
-	is1_tot = 0
-	is0_tot = 0
+# # Balanced accuracy total weight
+# 	is1_tot = 0
+# 	is0_tot = 0
 
 # LOSO iterations through subjects
 	for st in subject_tags:
@@ -93,18 +93,19 @@ def LOSO_testing(windows, labels, tag, means, stds, epochs, n_subjects, mdl_path
 	# Balanced accuracy weight
 		is1 = np.count_nonzero(Test_Y)
 		is0 = np.shape(Test_Y)[0] - is1
-		weight = is0 / is1
+		# weight = is0 / is1
 
-		acc, prec, rec, f1s = calculate_metrics(cm = cms, wgt = weight)
-		wacc = balanced_accuracy_score(Test_Y, Pred_Y)
-		print(f'\nWeighted accuracy = {wacc}\n')
+		acc, prec, rec, f1s = calculate_metrics(cm = cms)
 		print_metrics(acc, prec, rec, f1s, 'Spike-per-spike')
 
-		acc, prec, rec, f1s = calculate_metrics(cm = cmw, wgt = weight)
+		acc, prec, rec, f1s = calculate_metrics(cm = cmw)
 		print_metrics(acc, prec, rec, f1s, 'Window-per-window')
+		
+		wacc = balanced_accuracy_score(Test_Y, Pred_Y)
+		print(f'\nWeighted accuracy = {wacc}\n')
 
-		is1_tot += is1
-		is0_tot += is0
+		# is1_tot += is1
+		# is0_tot += is0
 
 	
 	with open(fig_path + 'tstfig.pkl', 'wb') as f:
@@ -112,18 +113,19 @@ def LOSO_testing(windows, labels, tag, means, stds, epochs, n_subjects, mdl_path
 		
 	print(f'\n Confusion matrices of {subject_tags.shape[0]} subjects')
 
-	# Total weight
-	weight_tot = is0_tot / is1_tot
+	# # Total weight
+	# weight_tot = is0_tot / is1_tot
+
 # Total Confusion matrices and evaluation:
 	
 	# 1. Spike-per-spike method:
 	cm_sps_tot = np.sum(cm_sps, axis = 0)
-	Acc_sps_tot, Prec_sps_tot, Rec_sps_tot, F1_sps_tot = calculate_metrics(cm = cm_sps_tot, wgt = weight_tot)
+	Acc_sps_tot, Prec_sps_tot, Rec_sps_tot, F1_sps_tot = calculate_metrics(cm = cm_sps_tot)
 	
 	print_metrics(Acc_sps_tot, Prec_sps_tot, Rec_sps_tot, F1_sps_tot, 'Spike-per-spike')
 	
 	# 2. Winodw-per-window method:
 	cm_wpw_tot = np.sum(cm_wpw, axis = 0)
-	Acc_wpw_tot, Prec_wpw_tot, Rec_wpw_tot, F1_wpw_tot = calculate_metrics(cm = cm_wpw_tot, wgt = weight_tot)
+	Acc_wpw_tot, Prec_wpw_tot, Rec_wpw_tot, F1_wpw_tot = calculate_metrics(cm = cm_wpw_tot)
 
 	print_metrics(Acc_wpw_tot, Prec_wpw_tot, Rec_wpw_tot, F1_wpw_tot, 'Window-per-window')
