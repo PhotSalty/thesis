@@ -96,6 +96,8 @@ def LOSO_testing(windows, labels, tag, means, stds, epochs, n_subjects, mdl_path
 		weight = is0 / is1
 
 		acc, prec, rec, f1s = calculate_metrics(cm = cms, wgt = weight)
+		wacc = balanced_accuracy_score(Test_Y, Pred_Y)
+		print(f'\nWeighted accuracy = {wacc}\n')
 		print_metrics(acc, prec, rec, f1s, 'Spike-per-spike')
 
 		acc, prec, rec, f1s = calculate_metrics(cm = cmw, wgt = weight)
