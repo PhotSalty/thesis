@@ -62,7 +62,7 @@ for i in np.arange(len(names)):
         alg = tree.DecisionTreeClassifier()
 
         # def metacost_training()
-        C = np.array([[0, 0], [1000, 0]])
+        C = np.array([[0, 1000], [0, 0]])
         S = pd.DataFrame(Train_X, columns = ['indi1', 'indi2', 'indi3', 'indi4', 'indi5', 'indi6'])
         S['Target'] = Train_Y
         model = MetaCost(S, alg, C).fit('Target', 3)
