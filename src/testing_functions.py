@@ -91,8 +91,8 @@ def LOSO_testing(windows, labels, tag, means, stds, epochs, n_subjects, mdl_path
 		cm_wpw.append(cmw)
 
 	# Balanced accuracy weight
-		is1 = np.count_nonzero(Test_Y)
-		is0 = np.shape(Test_Y)[0] - is1
+		# is1 = np.count_nonzero(Test_Y)
+		# is0 = np.shape(Test_Y)[0] - is1
 		# weight = is0 / is1
 
 		acc, prec, rec, f1s = calculate_metrics(cm = cms)
