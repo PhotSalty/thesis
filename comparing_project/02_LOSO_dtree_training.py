@@ -46,6 +46,9 @@ with open(pkl_path, 'rb') as f:
 
 
 # 2. Train Decision Tree - LOSO Validation:
+Test_orig_tot = np.zeros(len(names), dtype = object)
+Test_auxi_tot = np.zeros(len(names), dtype = object)
+Test_lbls_tot = np.zeros(len(names), dtype = object)
 
 for i in np.arange(len(names)):
 
@@ -54,12 +57,12 @@ for i in np.arange(len(names)):
         print(f'\n> Session {i} - <Subject {i}> out\n')
 
     # Total Test data
-        Test_orig_tot = s_orig[i, 0]
-        Test_auxi_tot = s_auxi[i, 0]
-        Test_lbls_tot = labels[i]
+        Test_orig_tot[i] = s_orig[i, 0]
+        Test_auxi_tot[i] = s_auxi[i, 0]
+        Test_lbls_tot[i] = labels[i]
 
     # Extract testing indicators
-        Test_X, Test_Y, Test_ind = extract_indicators(Test_orig_tot, Test_auxi_tot, Test_lbls_tot, e_impact)
+        # Test_X, Test_Y, Test_ind = extract_indicators(Test_orig_tot, Test_auxi_tot, Test_lbls_tot, e_impact)
 
     # Training data and spike-labels for 9 subjects
         tr9_orig = s_orig[np.arange(len(s_orig)) != i]
@@ -212,7 +215,7 @@ for i in np.arange(len(names)):
                 axs[1].legend(['train', 'validation'])
 
                 # Save model and its figures
-                model_path = sls + 'Output' + sls + 'out' + str(i) + sls + 'Models' + sls + 'M' + str(i) + str(k) +'.mdl'
+                model_path = sls + 'Output' + sls + 'out' + str(i) + sls + 'Models' + sls + 'M' + '_' + str(i) + '_' + str(k) + '.mdl'
                 figure_path = sls + 'Output' + sls + 'out' + str(i) + sls + 'Training_figures' + sls
 
                 if not os.path.exists(figure_path):
@@ -220,12 +223,13 @@ for i in np.arange(len(names)):
 
                 cnn_model.save(filepath = model_path)
 
-                figure_path += 'M' + str(i) + str(k) + '.pdf'
+                figure_path += 'M' + '_' + str(i) + '_' + str(k) + '.pdf'
                 fig.savefig(figure_path)
-
 
 # plt.show()
 
-''' from decision tree's positive predictions, we calculate spikes as a 4 second item '''
-
+with open('testing_data.pkl', 'wb') as f:
+        pkl.dump(Test_orig_tot, f)
+        pkl.dump(Test_auxi_tot, f)
+        pkl.dump(Test_lbls_tot, f)
 
