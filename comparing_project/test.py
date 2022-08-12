@@ -4,6 +4,7 @@ from scipy.signal import argrelextrema
 from matplotlib import pyplot as plt
 from sklearn.metrics import balanced_accuracy_score, confusion_matrix, accuracy_score
 import pickle as pkl
+from utils_case import extract_indicators
 
 def dataframe_test():
 	names = np.array(['sltn', 'gali', 'sdrf', 'pasx', 'anti', 'komi', 'fot', 'agge', 'conp', 'LH_galios'])
@@ -104,4 +105,63 @@ def waccur():
 	wacc = balanced_accuracy_score(target, pred)
 	print(acc, wacc, wacc_cst, wacc2)
 
-waccur()
+
+def indicator_indices():
+
+	pkl_path = 'preprocessed_data\\prepdata.pkl'
+	with open(pkl_path, 'rb') as f:
+		s_orig = pkl.load(f)
+		s_auxi = pkl.load(f)
+		labels = pkl.load(f)
+		e_impact = pkl.load(f)
+		swing_interval = pkl.load(f)
+
+	a, b, c = extract_indicators(s_orig[0, 0], s_auxi[0, 0], labels[0], e_impact)
+
+	print(f'{c}')
+	print(s_auxi[0, 0][c])
+	print(c.shape[0])
+	print(e_impact)
+	flag = True
+	for s in s_auxi[0, 0][c]:
+		if s < e_impact:
+			flag = False
+	
+	print(flag)
+
+
+def smote_ovrsmpl():
+
+	from collections import Counter
+	from imblearn.over_sampling import SMOTE
+
+	x = np.random.randint(0, 5, size = (100, 6))
+	target = np.zeros(100, dtype = np.int8)
+	target[1], target[3], target[19], target[23], target[30], target[44], target[67], target[82] = 1, 1, 1, 1, 1, 1, 1, 1
+
+	print(Counter(target))
+	oversample = SMOTE()
+	x1, aug_target = oversample.fit_resample(x, target)
+
+	print(Counter(aug_target))
+
+def randnorminit():
+	from keras.initializers import RandomNormal
+	initializer = RandomNormal(mean = 0.0, stddev = 0.1)
+	val = initializer(shape = (2,2))
+	print(val)
+
+
+def array_out_of_arrays():
+
+	outp = np.zeros(2, dtype = object)
+	b = np.empty((0, 3))
+	a = np.ones((10, 3))
+	c = np.vstack((b, a))
+	outp[0] = c
+	c = np.vstack((c, a))
+	outp[1] = c
+	
+	print(outp[0], '\n', outp[1])
+
+array_out_of_arrays()

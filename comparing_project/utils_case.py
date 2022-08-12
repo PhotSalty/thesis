@@ -1,5 +1,6 @@
 
 # 0. Libraries
+
 import numpy as np
 import pandas as pd
 import sys
@@ -37,6 +38,44 @@ def initializations():
         return sls, clear, FS, F_NYQ, flength, names, tags, file_folder
 
 
+def construct_model(in_shape):
+
+        from keras.layers import GaussianNoise, Dense, MaxPooling1D, Dropout, Conv1D
+        from keras.optimizers import Adam
+        from keras.models import Sequential
+        from keras.initializers import RandomNormal, Constant
+        from keras.callbacks import EarlyStopping
+
+        custom_early_stopping = EarlyStopping(
+                monitor='val_loss', 
+                patience=1, 
+                min_delta=0.01, 
+                mode='min'
+        )
+
+        opt = Adam(learning_rate = 0.001, beta_1 = 0.9, beta_2 = 0.999, epsilon = 0.00000001)
+        krnl_init = RandomNormal(mean = 0, stddev = 0.1)
+        bias_init = Constant(0.1)
+
+        model = Sequential()
+        # add noise
+        model.add(GaussianNoise(4.5))
+
+        model.add(Conv1D(filters=8, kernel_size=32, padding='same', activation='relu', input_shape=in_shape, use_bias=True, kernel_initializer = krnl_init, bias_initializer = bias_init))
+        model.add(MaxPooling1D(pool_size = 4, strides = 2))
+
+        model.add(Conv1D(filters = 16, kernel_size = 16, use_bias = True, padding = 'same', activation = 'relu', kernel_initializer = krnl_init, bias_initializer = bias_init))
+        model.add(MaxPooling1D(pool_size = 6, strides = 4))
+
+        model.add(Dense(64, activation = 'relu', use_bias = True, kernel_initializer = krnl_init, bias_initializer = bias_init))
+        model.add(Dropout(0.7))
+        model.add(Dense(64, activation = 'relu', use_bias = True, kernel_initializer = krnl_init, bias_initializer = bias_init))
+        model.add(Dropout(0.7))       
+        model.add(Dense(10, activation = 'softmax', use_bias = True, kernel_initializer = krnl_init, bias_initializer = bias_init))
+        
+        model.compile(loss = 'binary_crossentropy' , optimizer = opt, metrics = ['accuracy'])
+
+        return model, custom_early_stopping
 
 # 2. Functions
 
@@ -124,6 +163,7 @@ def extract_indicators(orig, auxi, labs, e_impact):
 
         Out_X = np.zeros(6)
         Out_Y = np.zeros(1)
+        indices = np.zeros(1, dtype = np.int64)
         j = 0
 
         while j < auxi.shape[0]:
@@ -132,35 +172,67 @@ def extract_indicators(orig, auxi, labs, e_impact):
                 s_a = auxi[j]
                 # lbl = labs[j]
                 
-                # if auxi[j]_L1norm > e_impact, search in the next 2 sec and move 2 sec forward
+                # if auxi[j]_L1norm >= e_impact, search in the next 2 sec and move 2 sec forward
                 if np.greater_equal(s_a, e_impact):
                         
-                        # find next local maxima - 3 axes
+                   # find next local maxima - 3 axes
                         search_area = auxi[j : j+2*64] #np.abs(Orig[j:j+2*64, 0]) + np.abs(Orig[j:j+2*64, 1]) + np.abs(Orig[j:j+2*64, 2])
-                        maxima = argrelextrema(search_area, np.greater)
-                        # next maxima's index
-                        nxt_max_ind = j + maxima[0][0]
-                        loc_max = orig[nxt_max_ind]
-                        xmax, ymax, zmax = loc_max
+                        # maxima = argrelextrema(search_area, np.greater)
+                        maxima = np.argmax(search_area)
+                        
+                   # next maxima's index
+                        # nxt_max_ind = j + maxima[0][0]
+                        nxt_max_ind = j + maxima
+                        indices = np.append(indices, nxt_max_ind)
 
-                        # find average of swing-movement
+                        loc_max = orig[nxt_max_ind]
+                        # xmax, ymax, zmax = loc_max
+
+                   # find average of swing-movement
                         swing_ind = np.arange(start = nxt_max_ind - ceil(0.2*64), stop = nxt_max_ind)
                         swing_avrg = np.mean( orig[swing_ind], axis = 0)
-                        xswing, yswing, zswing = swing_avrg
+                        # xswing, yswing, zswing = swing_avrg
 
                         indicators = np.concatenate((loc_max, swing_avrg), axis = 0)
                         Out_X = np.vstack((Out_X, indicators))
                         Out_Y = np.append(Out_Y, labs[nxt_max_ind])
 
                         # jump after the calculated maxima
-                        j += maxima[0][0] + 1
-                
+                        # j += maxima[0][0] + 1
+                        j += maxima + 1
+
                 else:
                         # keep searching
                         j += 1
 
-        return Out_X[1:], Out_Y[1:]
+        indices = np.asarray(indices, dtype = np.int64)
+        return Out_X[1:], Out_Y[1:], indices[1:]
 
+def extract_event_windows(ind, orig, labs):
+        detected_events = np.zeros(ind.shape[0], dtype = object)
+        event_labs = np.zeros(ind.shape[0], dtype = np.int8)
+        wds_ind = np.zeros((ind.shape[0], 2), dtype = np.int64)
+        k = 0
+
+        for j in ind:
+                wds_ind[k, 0] = j - 2*64
+                wds_ind[k, 1] = j + 2*64
+                detected_events[k] = orig[j-2*64:j+2*64]
+                event_labs[k] = labs[j]
+                k += 1
+        
+        return detected_events, event_labs, wds_ind
+
+def concatenate_subj_windows(dtree_out_wds, dtree_out_lbls, dtree_out_ind):
+        cnn_train_x = np.empty((0,3))
+        cnn_train_y = np.empty((0))
+        cnn_train_ind = np.empty((0,2))
+        for k in np.arange(dtree_out_ind.shape[0]):
+                cnn_train_x = np.vstack((cnn_train_x, dtree_out_wds[k]))
+                cnn_train_y = np.vstack((cnn_train_y, dtree_out_lbls[k]))
+                cnn_train_ind = np.vstack((cnn_train_ind, dtree_out_ind[k]))
+
+        return cnn_train_x, cnn_train_y, cnn_train_ind
 
 # 3. Plotting
 
