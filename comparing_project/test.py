@@ -132,18 +132,35 @@ def indicator_indices():
 
 def smote_ovrsmpl():
 
+	from copy import deepcopy
 	from collections import Counter
 	from imblearn.over_sampling import SMOTE
 
-	x = np.random.randint(0, 5, size = (100, 6))
+	x = np.random.randint(0, 5, size = (100, 6, 3))
 	target = np.zeros(100, dtype = np.int8)
 	target[1], target[3], target[19], target[23], target[30], target[44], target[67], target[82] = 1, 1, 1, 1, 1, 1, 1, 1
 
 	print(Counter(target))
 	oversample = SMOTE()
-	x1, aug_target = oversample.fit_resample(x, target)
+	x1, y1 = oversample.fit_resample(x[:,:,0], target)
+	x2, y2 = oversample.fit_resample(x[:,:,1], target)
+	x3, y3 = oversample.fit_resample(x[:,:,2], target)
+	
+	x_aug = np.zeros((x1.shape[0], x1.shape[1], 3))
+	x_aug[:, :, 0] = x1
+	x_aug[:, :, 1] = x2
+	x_aug[:, :, 2] = x3
+	
+	if np.array_equal(y1, y2) and np.array_equal(y1, y3):
+		y_aug = y1
+	else:
+		print('\nError on y augmentation\n')
 
-	print(Counter(aug_target))
+	print(x_aug.shape, y_aug.shape)
+	print(x_aug[100:110, :, :])
+	print(y_aug[100:110])
+
+	print(Counter(y1))
 
 def randnorminit():
 	from keras.initializers import RandomNormal
@@ -154,14 +171,38 @@ def randnorminit():
 
 def array_out_of_arrays():
 
-	outp = np.zeros(2, dtype = object)
-	b = np.empty((0, 3))
-	a = np.ones((10, 3))
-	c = np.vstack((b, a))
-	outp[0] = c
-	c = np.vstack((c, a))
-	outp[1] = c
+	a = np.zeros(5, dtype = object)
+	b = np.ones((10))
+	c = np.zeros((0))
+	# b = np.ones((10, 3))
+	# c = np.zeros((0, 3))
+	print(b.shape, c.shape)
+	for i in np.arange(5):
+		a[i] = b * i
 	
-	print(outp[0], '\n', outp[1])
+	for i in np.arange(5):
+		# c = np.append(c, a[i], axis = 0)
+		c = np.append(c, a[i])
 
-array_out_of_arrays()
+	print(c)
+	print(c[10:20])
+
+# array_out_of_arrays()
+
+
+def counter_weights():
+
+	from collections import Counter
+
+	a = np.zeros(20)
+	ind = np.random.randint(0, 20, size = 5)
+	a[ind] = 1
+	d = {
+		0. : 15.,
+		1. : 5.
+	}
+	print(Counter(a))
+	print(dict(Counter(a)))
+	print(d)
+
+counter_weights()
