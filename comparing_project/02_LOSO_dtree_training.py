@@ -44,7 +44,6 @@ with open(pkl_path, 'rb') as f:
 # print_eimpact(s_auxi, e_impact, m)
 
 
-
 # 2. Train Decision Tree - LOSO Validation:
 Test_orig_tot = np.zeros(len(names), dtype = object)
 Test_auxi_tot = np.zeros(len(names), dtype = object)
@@ -75,7 +74,8 @@ for i in np.arange(len(names)):
         dtree_out_ind  = np.zeros(9, dtype = object)
 
         for j in np.arange(len(tr9_orig)):
-
+        
+                print(f'\tLOSO iteration {j}'.expandtabs(3))
         # Dtree training data preparation:
                 
                 # Selecting 8 out of 9 subjects
@@ -117,7 +117,8 @@ for i in np.arange(len(names)):
 
         # Test decision tree with the Test1 (1 subject out of 9 -> Dtree LOSO)
                 pred = dtree_model.predict(Test1_X)
-
+                
+                print(f'\tDecision tree training is over.\n'.expandtabs(3))
 
         # Plot dtree predictions
                 # plot_dtree_predictions()
@@ -151,13 +152,19 @@ for i in np.arange(len(names)):
                 dtree_out_lbls[j] = det_ev_lbls
                 dtree_out_ind[j]  = wds_ind     # np.transpose(np.vstack((det_ev_ind - 2*64, det_ev_ind + 2*64)))
                 
-        
+                print(f'\tWindow shape:  {dtree_out_wds[j].shape}, {dtree_out_wds[j][0].shape}'.expandtabs(6))
+                print(f'\tLabels shape:  {dtree_out_lbls[j].shape}, {dtree_out_lbls[j][0]}'.expandtabs(6))
+                print(f'\tIndices shape: {dtree_out_ind[j].shape}, {dtree_out_ind[j][0]}\n'.expandtabs(6))
+                
+
 # 3. CNN LOSO training
+        print(f'>>>>>> CNN training <<<<<<\n')
 
         for k in np.arange(dtree_out_wds.shape[0]):
-        
+                
+                print(f'> CNN Subject {k} out')
         # CNN validation data:
-
+                
                 # Selecting 1 out of 9 subjects
                 cnn_val1_wds  = dtree_out_wds[k]
                 cnn_val1_lbls = dtree_out_lbls[k]
@@ -166,17 +173,32 @@ for i in np.arange(len(names)):
                 val_data = (cnn_val1_wds, cnn_val1_lbls)
         
         # CNN training data:
-
+                
                 # Selecting 8 out of 9 subjects
                 cnn_trn8_wds  = dtree_out_wds[np.arange(len(dtree_out_wds)) != k]
                 cnn_trn8_lbls = dtree_out_lbls[np.arange(len(dtree_out_lbls)) != k]
                 cnn_trn8_ind  = dtree_out_ind[np.arange(len(dtree_out_ind)) != k]
                 
-                # Concatenate windows of all training subjects
+                
+                print(f'\tShape of windows: {cnn_trn8_wds.shape}, {cnn_trn8_wds[0].shape}'.expandtabs(6))
+                print(f'\tShape of labels:  {cnn_trn8_lbls.shape}, {cnn_trn8_lbls[0].shape}'.expandtabs(6))
+                print(f'\tShape of indices: {cnn_trn8_ind.shape}, {cnn_trn8_ind[0].shape}'.expandtabs(6))
+                # Concatenate windows of all training subjects 
                 cnn_Train8_X, cnn_Train8_Y, cnn_Train8_ind = concatenate_subj_windows(cnn_trn8_wds, cnn_trn8_lbls, cnn_trn8_ind)
 
                 # Label-balancing through SMOTE resample
-                cnn_Train8_X_aug, cnn_Train8_Y_aug = oversample.fit_resample(cnn_Train8_X, cnn_Train8_Y)
+                x0, y0 = oversample.fit_resample(cnn_Train8_X[:, :, 0], cnn_Train8_Y)
+                x1, y1 = oversample.fit_resample(cnn_Train8_X[:, :, 1], cnn_Train8_Y)
+                x2, y2 = oversample.fit_resample(cnn_Train8_X[:, :, 2], cnn_Train8_Y)
+                
+                cnn_Train8_X_aug = np.zeros((x0.shape[0], x0.shape[1], 3))
+                cnn_Train8_X_aug[:, :, 0] = x0
+                cnn_Train8_X_aug[:, :, 1] = x1
+                cnn_Train8_X_aug[:, :, 2] = x2
+                
+                cnn_Train8_Y_aug = y0
+                
+                # cnn_Train8_X_aug, cnn_Train8_Y_aug = oversample.fit_resample(cnn_Train8_X, cnn_Train8_Y)
 
                 # Print pre and after balance labels
                 print(f'\n\tOriginal training data: {Counter(cnn_Train8_Y)}'.expandtabs(4))
@@ -185,17 +207,22 @@ for i in np.arange(len(names)):
                 # DCNN training:
                 in_shape = cnn_Train8_X_aug.shape[1:]
                 cnn_model, custom_early_stopping = construct_model(in_shape = in_shape)
-
+                
+                print(f'\n> Training_X = {cnn_Train8_X_aug.shape}, Training_Y = {cnn_Train8_Y_aug.shape}\n')
+                
                 history = cnn_model.fit(
                         x = cnn_Train8_X_aug,
                         y = cnn_Train8_Y_aug,
+                        epochs = 5,
                         batch_size = 200,
                         class_weight = None,
                         validation_data = val_data,
                         verbose = 2,
                         callbacks = [custom_early_stopping]
                 )
-        
+                 
+                cnn_model.summary()
+
         # Plot model's training evaluation
                 fig, axs = plt.subplots(2)
                 fig.suptitle(f'Subject out: {i} , Validation subject: {k}')

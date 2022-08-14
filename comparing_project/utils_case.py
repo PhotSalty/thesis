@@ -40,7 +40,7 @@ def initializations():
 
 def construct_model(in_shape):
 
-        from keras.layers import GaussianNoise, Dense, MaxPooling1D, Dropout, Conv1D
+        from keras.layers import GaussianNoise, Dense, MaxPooling1D, Dropout, Conv1D, Flatten
         from keras.optimizers import Adam
         from keras.models import Sequential
         from keras.initializers import RandomNormal, Constant
@@ -61,17 +61,20 @@ def construct_model(in_shape):
         # add noise
         model.add(GaussianNoise(4.5))
 
+        # model.add(Conv1D(filters=8, kernel_size=32, activation='relu', padding = 'valid', input_shape=in_shape, use_bias=True, kernel_initializer = krnl_init, bias_initializer = bias_init))
         model.add(Conv1D(filters=8, kernel_size=32, padding='same', activation='relu', input_shape=in_shape, use_bias=True, kernel_initializer = krnl_init, bias_initializer = bias_init))
         model.add(MaxPooling1D(pool_size = 4, strides = 2))
 
+        # model.add(Conv1D(filters = 16, kernel_size = 16, use_bias = True, activation = 'relu', padding = 'valid', kernel_initializer = krnl_init, bias_initializer = bias_init))
         model.add(Conv1D(filters = 16, kernel_size = 16, use_bias = True, padding = 'same', activation = 'relu', kernel_initializer = krnl_init, bias_initializer = bias_init))
         model.add(MaxPooling1D(pool_size = 6, strides = 4))
-
+        
+        model.add(Flatten())
         model.add(Dense(64, activation = 'relu', use_bias = True, kernel_initializer = krnl_init, bias_initializer = bias_init))
         model.add(Dropout(0.7))
         model.add(Dense(64, activation = 'relu', use_bias = True, kernel_initializer = krnl_init, bias_initializer = bias_init))
         model.add(Dropout(0.7))       
-        model.add(Dense(10, activation = 'softmax', use_bias = True, kernel_initializer = krnl_init, bias_initializer = bias_init))
+        model.add(Dense(1, activation = 'softmax', use_bias = True, kernel_initializer = krnl_init, bias_initializer = bias_init))
         
         model.compile(loss = 'binary_crossentropy' , optimizer = opt, metrics = ['accuracy'])
 
@@ -209,28 +212,39 @@ def extract_indicators(orig, auxi, labs, e_impact):
         return Out_X[1:], Out_Y[1:], indices[1:]
 
 def extract_event_windows(ind, orig, labs):
-        detected_events = np.zeros(ind.shape[0], dtype = object)
-        event_labs = np.zeros(ind.shape[0], dtype = np.int8)
+        detected_events = np.zeros((ind.shape[0], 257, 3), dtype = np.float64)
+        event_labs = np.zeros(ind.shape[0], dtype = np.float64)
         wds_ind = np.zeros((ind.shape[0], 2), dtype = np.int64)
         k = 0
-
+        
+        print(f'\tShape of original signal: {orig.shape}\n'.expandtabs(6))
         for j in ind:
                 wds_ind[k, 0] = j - 2*64
                 wds_ind[k, 1] = j + 2*64
-                detected_events[k] = orig[j-2*64:j+2*64]
+                detected_events[k] = orig[j-2*64:j+2*64+1]
                 event_labs[k] = labs[j]
                 k += 1
         
+        print(f'\tDetected events shape: {detected_events.shape}\n'.expandtabs(6))
+        print(f'\tWindow indices: {wds_ind[10]}\n'.expandtabs(6))
         return detected_events, event_labs, wds_ind
 
 def concatenate_subj_windows(dtree_out_wds, dtree_out_lbls, dtree_out_ind):
-        cnn_train_x = np.empty((0,3))
+        cnn_train_x = np.empty((0, 257, 3))
         cnn_train_y = np.empty((0))
         cnn_train_ind = np.empty((0,2))
+        print(dtree_out_wds.shape, dtree_out_wds[0].shape)
+        print(dtree_out_lbls.shape, dtree_out_lbls[0].shape)
+        print(dtree_out_ind.shape, dtree_out_ind[0].shape)
         for k in np.arange(dtree_out_ind.shape[0]):
-                cnn_train_x = np.vstack((cnn_train_x, dtree_out_wds[k]))
-                cnn_train_y = np.vstack((cnn_train_y, dtree_out_lbls[k]))
-                cnn_train_ind = np.vstack((cnn_train_ind, dtree_out_ind[k]))
+                
+                cnn_train_x = np.append(cnn_train_x, dtree_out_wds[k], axis = 0)
+                cnn_train_y = np.append(cnn_train_y, dtree_out_lbls[k], axis = 0)
+                cnn_train_ind = np.append(cnn_train_ind, dtree_out_ind[k], axis = 0)
+                
+                print(f'\tTrain_X shape: {cnn_train_x.shape}\n'.expandtabs(6))
+                print(f'\tTrain_Y shape: {cnn_train_y.shape}\n'.expandtabs(6))
+                print(f'\tIndices shape: {cnn_train_ind.shape}\n'.expandtabs(6))
 
         return cnn_train_x, cnn_train_y, cnn_train_ind
 
