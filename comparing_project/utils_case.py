@@ -40,7 +40,7 @@ def initializations():
 
 def construct_model(in_shape):
 
-        from keras.layers import GaussianNoise, Dense, MaxPooling1D, Dropout, Conv1D, Flatten
+        from keras.layers import GaussianNoise, Dense, MaxPooling1D, Dropout, Conv1D, Flatten, BatchNormalization
         from keras.optimizers import Adam
         from keras.models import Sequential
         from keras.initializers import RandomNormal, Constant
@@ -48,7 +48,7 @@ def construct_model(in_shape):
 
         custom_early_stopping = EarlyStopping(
                 monitor='val_loss', 
-                patience=1, 
+                patience=3, 
                 min_delta=0.001, 
                 mode='min'
         )
@@ -60,13 +60,16 @@ def construct_model(in_shape):
         model = Sequential()
         # add noise
         model.add(GaussianNoise(4.5))
+        model.add(BatchNormalization())
 
         # model.add(Conv1D(filters=8, kernel_size=32, activation='relu', padding = 'valid', input_shape=in_shape, use_bias=True, kernel_initializer = krnl_init, bias_initializer = bias_init))
         model.add(Conv1D(filters=8, kernel_size=32, padding='same', activation='relu', input_shape=in_shape, use_bias=True, kernel_initializer = krnl_init, bias_initializer = bias_init))
+        model.add(BatchNormalization())
         model.add(MaxPooling1D(pool_size = 4, strides = 2))
 
         # model.add(Conv1D(filters = 16, kernel_size = 16, use_bias = True, activation = 'relu', padding = 'valid', kernel_initializer = krnl_init, bias_initializer = bias_init))
         model.add(Conv1D(filters = 16, kernel_size = 16, use_bias = True, padding = 'same', activation = 'relu', kernel_initializer = krnl_init, bias_initializer = bias_init))
+        model.add(BatchNormalization())
         model.add(MaxPooling1D(pool_size = 6, strides = 4))
         
         model.add(Flatten())
@@ -238,18 +241,18 @@ def concatenate_subj_windows(dtree_out_wds, dtree_out_lbls, dtree_out_ind):
         cnn_train_x = np.empty((0, 257, 3))
         cnn_train_y = np.empty((0))
         cnn_train_ind = np.empty((0,2))
-        print(dtree_out_wds.shape, dtree_out_wds[0].shape)
-        print(dtree_out_lbls.shape, dtree_out_lbls[0].shape)
-        print(dtree_out_ind.shape, dtree_out_ind[0].shape)
+        #print(dtree_out_wds.shape, dtree_out_wds[0].shape)
+        #print(dtree_out_lbls.shape, dtree_out_lbls[0].shape)
+        #print(dtree_out_ind.shape, dtree_out_ind[0].shape)
         for k in np.arange(dtree_out_ind.shape[0]):
                 
                 cnn_train_x = np.append(cnn_train_x, dtree_out_wds[k], axis = 0)
                 cnn_train_y = np.append(cnn_train_y, dtree_out_lbls[k], axis = 0)
                 cnn_train_ind = np.append(cnn_train_ind, dtree_out_ind[k], axis = 0)
                 
-                print(f'\tTrain_X shape: {cnn_train_x.shape}\n'.expandtabs(6))
-                print(f'\tTrain_Y shape: {cnn_train_y.shape}\n'.expandtabs(6))
-                print(f'\tIndices shape: {cnn_train_ind.shape}\n'.expandtabs(6))
+        #print(f'\tTrain_X shape: {cnn_train_x.shape}\n'.expandtabs(6))
+        #print(f'\tTrain_Y shape: {cnn_train_y.shape}\n'.expandtabs(6))
+        #print(f'\tIndices shape: {cnn_train_ind.shape}\n'.expandtabs(6))
 
         return cnn_train_x, cnn_train_y, cnn_train_ind
 
