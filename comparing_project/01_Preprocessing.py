@@ -115,8 +115,8 @@ for i, nm, tg in zip(np.arange(len(names)), names, tags):
 		e_impact = min_spk_acc
 
 # e-impact is selected as the 0.1% of the minimum spike amplitude:
-e_impact = np.float16(np.round(0.001 * e_impact, 5))
-print(f'\n  > Selected e-impact: {e_impact:.3f}\n')
+e_impact = np.float16(np.round(0.0001 * e_impact, 6))
+print(f'\n  > Selected e-impact: {e_impact:.6f}\n')
 
 # Basic attributes ready:
 # e_impact = pd.DataFrame( temp, columns = ['x', 'y', 'z'], index = [''] )

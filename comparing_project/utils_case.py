@@ -119,7 +119,8 @@ def concatenate_lists(data, mde):
 
         # Initialize total_strm channels with the first subject's stream
         if mde:
-                strm = data[0, 0]       # Subject 0, signal[0]
+                # strm = data[0, 0]       # Subject 0, signal[0]
+                strm = data[0]       # Subject 0, signal[0]
                 total_strm = [
                         strm[:, 0],             # x channel
                         strm[:, 1],             # y channel
@@ -129,7 +130,8 @@ def concatenate_lists(data, mde):
                 # Iterate for the rest of the subjects
                 for d in data[1:]:
                         # 3 channels of signal-stream per subject
-                        strm = d[0]
+                        # strm = d[0]
+                        strm = d
                         total_strm[0] = np.concatenate((total_strm[0], strm[:, 0]), axis = 0)
                         total_strm[1] = np.concatenate((total_strm[1], strm[:, 1]), axis = 0)
                         total_strm[2] = np.concatenate((total_strm[2], strm[:, 2]), axis = 0)
@@ -138,10 +140,12 @@ def concatenate_lists(data, mde):
 
         else:
 
-                total_strm = data[0, 0]
+                # total_strm = data[0, 0]
+                total_strm = data[0]
 
                 for d in data[1:]:
-                        strm = d[0]
+                        # strm = d[0]
+                        strm = d
                         total_strm = np.concatenate((total_strm, strm), axis = 0)
 
         # total_strm = np.transpose(np.asarray(total_strm))
@@ -200,9 +204,9 @@ def extract_indicators(orig, auxi, labs, e_impact):
                         Out_X = np.vstack((Out_X, indicators))
                         Out_Y = np.append(Out_Y, labs[nxt_max_ind])
 
-                        # jump after the calculated maxima
+                        # jump after the area of the calculated maxima
                         # j += maxima[0][0] + 1
-                        j += maxima + 1
+                        j += 2*64 + 1
 
                 else:
                         # keep searching
