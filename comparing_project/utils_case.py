@@ -49,7 +49,7 @@ def construct_model(in_shape):
         custom_early_stopping = EarlyStopping(
                 monitor='val_loss', 
                 patience=1, 
-                min_delta=0.01, 
+                min_delta=0.001, 
                 mode='min'
         )
 
@@ -71,9 +71,9 @@ def construct_model(in_shape):
         
         model.add(Flatten())
         model.add(Dense(64, activation = 'relu', use_bias = True, kernel_initializer = krnl_init, bias_initializer = bias_init))
-        model.add(Dropout(0.7))
+        model.add(Dropout(0.5))
         model.add(Dense(64, activation = 'relu', use_bias = True, kernel_initializer = krnl_init, bias_initializer = bias_init))
-        model.add(Dropout(0.7))       
+        model.add(Dropout(0.5))       
         model.add(Dense(1, activation = 'softmax', use_bias = True, kernel_initializer = krnl_init, bias_initializer = bias_init))
         
         model.compile(loss = 'binary_crossentropy' , optimizer = opt, metrics = ['accuracy'])
@@ -219,11 +219,12 @@ def extract_event_windows(ind, orig, labs):
         
         print(f'\tShape of original signal: {orig.shape}\n'.expandtabs(6))
         for j in ind:
-                wds_ind[k, 0] = j - 2*64
-                wds_ind[k, 1] = j + 2*64
-                detected_events[k] = orig[j-2*64:j+2*64+1]
-                event_labs[k] = labs[j]
-                k += 1
+                if j >= 128:
+                        wds_ind[k, 0] = j - 2*64
+                        wds_ind[k, 1] = j + 2*64 + 1
+                        detected_events[k] = orig[j-2*64:j+2*64+1]
+                        event_labs[k] = labs[j]
+                        k += 1
         
         print(f'\tDetected events shape: {detected_events.shape}\n'.expandtabs(6))
         print(f'\tWindow indices: {wds_ind[10]}\n'.expandtabs(6))
