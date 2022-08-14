@@ -205,4 +205,16 @@ def counter_weights():
 	print(dict(Counter(a)))
 	print(d)
 
-counter_weights()
+# counter_weights()
+
+
+def plot_adjust_test():
+
+	fig, axs = plt.subplots(2)
+	axs[0].axhline(1)
+	axs[1].axhline(2)
+	fig.subplots_adjust(wspace = 0.4, hspace = 0.6)
+
+	plt.show()
+
+plot_adjust_test()
