@@ -187,35 +187,37 @@ for i in np.arange(len(names)):
                 cnn_Train8_X, cnn_Train8_Y, cnn_Train8_ind = concatenate_subj_windows(cnn_trn8_wds, cnn_trn8_lbls, cnn_trn8_ind)
 
                 # Label-balancing through SMOTE resample
-                x0, y0 = oversample.fit_resample(cnn_Train8_X[:, :, 0], cnn_Train8_Y)
-                x1, y1 = oversample.fit_resample(cnn_Train8_X[:, :, 1], cnn_Train8_Y)
-                x2, y2 = oversample.fit_resample(cnn_Train8_X[:, :, 2], cnn_Train8_Y)
+                #x0, y0 = oversample.fit_resample(cnn_Train8_X[:, :, 0], cnn_Train8_Y)
+                #x1, y1 = oversample.fit_resample(cnn_Train8_X[:, :, 1], cnn_Train8_Y)
+                #x2, y2 = oversample.fit_resample(cnn_Train8_X[:, :, 2], cnn_Train8_Y)
                 
-                cnn_Train8_X_aug = np.zeros((x0.shape[0], x0.shape[1], 3))
-                cnn_Train8_X_aug[:, :, 0] = x0
-                cnn_Train8_X_aug[:, :, 1] = x1
-                cnn_Train8_X_aug[:, :, 2] = x2
+                #cnn_Train8_X_aug = np.zeros((x0.shape[0], x0.shape[1], 3))
+                #cnn_Train8_X_aug[:, :, 0] = x0
+                #cnn_Train8_X_aug[:, :, 1] = x1
+                #cnn_Train8_X_aug[:, :, 2] = x2
                 
-                cnn_Train8_Y_aug = y0
+                #cnn_Train8_Y_aug = y0
                 
                 # cnn_Train8_X_aug, cnn_Train8_Y_aug = oversample.fit_resample(cnn_Train8_X, cnn_Train8_Y)
 
                 # Print pre and after balance labels
+                weights = dict(Counter(cnn_Train8_Y))
                 print(f'\n\tOriginal training data: {Counter(cnn_Train8_Y)}'.expandtabs(4))
-                print(f'\tAugmented training data: {Counter(cnn_Train8_Y_aug)}\n'.expandtabs(4))
+                #print(f'\tAugmented training data: {Counter(cnn_Train8_Y_aug)}\n'.expandtabs(4))
         
                 # DCNN training:
-                in_shape = cnn_Train8_X_aug.shape[1:]
+                #in_shape = cnn_Train8_X_aug.shape[1:]
+                in_shape = cnn_Train8_X.shape[1:]
                 cnn_model, custom_early_stopping = construct_model(in_shape = in_shape)
                 
-                print(f'\n> Training_X = {cnn_Train8_X_aug.shape}, Training_Y = {cnn_Train8_Y_aug.shape}\n')
+                #print(f'\n> Training_X = {cnn_Train8_X_aug.shape}, Training_Y = {cnn_Train8_Y_aug.shape}\n')
                 
                 history = cnn_model.fit(
-                        x = cnn_Train8_X_aug,
-                        y = cnn_Train8_Y_aug,
+                        x = cnn_Train8_X,
+                        y = cnn_Train8_Y,
                         epochs = 5,
                         batch_size = 200,
-                        class_weight = None,
+                        class_weight = weights,
                         validation_data = val_data,
                         verbose = 2,
                         callbacks = [custom_early_stopping]
@@ -242,8 +244,8 @@ for i in np.arange(len(names)):
                 axs[1].legend(['train', 'validation'])
 
                 # Save model and its figures
-                model_path = sls + 'Output' + sls + 'out' + str(i) + sls + 'Models' + sls + 'M' + '_' + str(i) + '_' + str(k) + '.mdl'
-                figure_path = sls + 'Output' + sls + 'out' + str(i) + sls + 'Training_figures' + sls
+                model_path = 'Output' + sls + 'out' + str(i) + sls + 'Models' + sls + 'M' + '_' + str(i) + '_' + str(k) + '.mdl'
+                figure_path = 'Output' + sls + 'out' + str(i) + sls + 'Training_figures' + sls
 
                 if not os.path.exists(figure_path):
                         os.makedirs(figure_path)
