@@ -11,6 +11,12 @@ with open('dt_testing_data.pkl', 'rb') as f:
     e_impact = pkl.load(f)
 
 cm_tot = []
+
+fig_path = 'Output' + sls + 'Testing_figures' + sls
+    
+if not os.path.exists(fig_path):
+    os.makedirs(fig_path)
+
 for s in np.arange(10):
 
     # Load s-subject data
@@ -25,7 +31,6 @@ for s in np.arange(10):
     # Subject-s testing figures
     fig = np.zeros(10, dtype=object)
     fi = 0
-    fig_path = 'Output' + sls + 'Testing_figures' + sls
 
     # Cnn models inital path
     cnn_path_s = 'Output' + sls + 'out' + str(s) + sls + 'Models' + sls
@@ -66,11 +71,11 @@ for s in np.arange(10):
         plt.suptitle(f'Subject <{s}>', fontsize = 24, y = 1)
         plt.title(f'Comparing ground-truth labels with predictions')
         plt.plot(Pred_Y, color = 'orange')
-        plt.plot(Test_Y, color = 'blue', alpha = 0.5)
+        plt.plot(cnn_Y, color = 'blue', alpha = 0.5)
 
 
         # Calculate evaluation coefficients spike-per-spike
-        cm_s_i = confusion_matrix(y_true = Test_Y, y_pred = Pred_Y)
+        cm_s_i = confusion_matrix(y_true = cnn_Y, y_pred = Pred_Y)
         cm_s.append(cm_s_i)
 
         acc, prec, rec, f1s = calculate_metrics(cm = cm_s_i)
@@ -78,7 +83,7 @@ for s in np.arange(10):
 
     
     # Concatenate s-subjects confusion matrices with the rest
-    cm_tot.append(cm_s)
+    cm_tot.append(np.sum(cm_s, axis = 0))
 
     # Save s-subject testing figures
     with open(fig_path + 'tstfig_' + str(s) + '.pkl', 'wb') as f:
