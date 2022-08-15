@@ -193,19 +193,32 @@ def array_out_of_arrays():
 def counter_weights():
 
 	from collections import Counter
+	from sklearn.utils import class_weight
 
 	a = np.zeros(20)
 	ind = np.random.randint(0, 20, size = 5)
 	a[ind] = 1
+	
 	d = {
 		0. : 15.,
 		1. : 5.
 	}
-	print(Counter(a))
-	print(dict(Counter(a)))
-	print(d)
 
-# counter_weights()
+	d1 = dict(Counter(a))
+
+	print(Counter(a))
+	print(d)
+	print(d1)
+
+	class_weights = class_weight.compute_class_weight(class_weight = 'balanced', classes = np.unique(a), y = a)
+	
+	print('\n', class_weights)
+	print(15*class_weights[0], 5*class_weights[1])
+	# # w0 = 15 / 15
+	# # w1 = 15 / 5
+	# print(f'Weights: \n\tclass_0 -> {w0} \n\tclass_1 -> {w1}'.expandtabs(4))
+
+counter_weights()
 
 
 def plot_adjust_test():
@@ -217,4 +230,4 @@ def plot_adjust_test():
 
 	plt.show()
 
-plot_adjust_test()
+# plot_adjust_test()
