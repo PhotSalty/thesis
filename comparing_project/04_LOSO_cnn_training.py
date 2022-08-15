@@ -60,10 +60,21 @@ for s in np.arange(10):
         #    axs[1].plot(cnn_trn_X[10])
         #    axs[2].plot(cnn_trn_X[100])
 
-        # label_weight = dict(Counter(cnn_trn_Y))
-        label_weight = class_weight.compute_class_weight(class_weight = 'balanced', classes = np.unique(cnn_trn_Y), y = cnn_trn_Y)
+        # Custon weight computation:
+        label_weight = dict(Counter(cnn_trn_Y))
+        
+        if label_weight[0] > label_weight[1]:
+            max_w = label_weight[0]
+        else:
+            max_w = label_weight[1]
 
-        label_weight = dict(enumerate(label_weight))
+        label_weight.update({0 : max_w / label_weight[0], 1: max_w / label_weight[1]})
+
+        # Weight computation through sklearn:
+        #label_weight = class_weight.compute_class_weight(class_weight = 'balanced', classes = np.unique(cnn_trn_Y), y = cnn_trn_Y)
+
+        #label_weight = dict(enumerate(label_weight))
+        
         print(f'\n\tTest subj: {s}, Validation subj: {i}, Class distribution: {label_weight}'.expandtabs(4))
 
         in_shape = cnn_trn_X.shape[1:]
