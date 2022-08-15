@@ -1,5 +1,6 @@
 from utils_case import *
 from collections import Counter
+from sklearn.utils import class_weight
 
 # with open('tree_out_data.pkl', 'rb') as f:
 with open('dt_training_data.pkl', 'rb') as f:
@@ -59,7 +60,10 @@ for s in np.arange(10):
         #    axs[1].plot(cnn_trn_X[10])
         #    axs[2].plot(cnn_trn_X[100])
 
-        label_weight = dict(Counter(cnn_trn_Y))
+        # label_weight = dict(Counter(cnn_trn_Y))
+        label_weight = class_weight.compute_class_weight(class_weight = 'balanced', classes = np.unique(cnn_trn_Y), y = cnn_trn_Y)
+
+        label_weight = dict(enumerate(label_weight))
         print(f'\n\tTest subj: {s}, Validation subj: {i}, Class distribution: {label_weight}'.expandtabs(4))
 
         in_shape = cnn_trn_X.shape[1:]
