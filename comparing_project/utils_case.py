@@ -224,7 +224,7 @@ def extract_event_windows(ind, orig, labs):
         wds_ind = np.zeros((ind.shape[0], 2), dtype = np.int64)
         k = 0
         
-        print(f'\tShape of original signal: {orig.shape}\n'.expandtabs(6))
+        #print(f'\tShape of original signal: {orig.shape}\n'.expandtabs(6))
         for j in ind:
                 if j >= 128:
                         wds_ind[k, 0] = j - 2*64
@@ -233,8 +233,8 @@ def extract_event_windows(ind, orig, labs):
                         event_labs[k] = labs[j]
                         k += 1
         
-        print(f'\tDetected events shape: {detected_events.shape}\n'.expandtabs(6))
-        print(f'\tWindow indices: {wds_ind[10]}\n'.expandtabs(6))
+        #print(f'\tDetected events shape: {detected_events.shape}\n'.expandtabs(6))
+        #print(f'\tWindow indices: {wds_ind[10]}\n'.expandtabs(6))
         return detected_events, event_labs, wds_ind
 
 def concatenate_subj_windows(dtree_out_wds, dtree_out_lbls, dtree_out_ind):
