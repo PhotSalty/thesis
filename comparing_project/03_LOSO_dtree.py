@@ -52,6 +52,8 @@ subj_wds  = np.zeros(len(names), dtype = object)
 subj_lbls = np.zeros(len(names), dtype = object)
 subj_ind  = np.zeros(len(names), dtype = object)
 
+dtree_model_collection = np.zeros(len(names), dtype = object)
+
 for i in np.arange(len(names)):
 
 # 1. Leaving i-th subject out for total Training
@@ -75,6 +77,12 @@ for i in np.arange(len(names)):
 	dtree_out_wds  = np.zeros(9, dtype = object)
 	dtree_out_lbls = np.zeros(9, dtype = object)
 	dtree_out_ind  = np.zeros(9, dtype = object)
+
+	dt_model_temp = np.zeros(len(names)-1, dtype = object)
+	dt_model_path = 'Output' + sls + 'out' + str(i) + sls + 'Models' + sls
+	
+	if not os.path.exists(dt_model_path):
+		os.makedirs(dt_model_path)
 
 	for j in np.arange(len(tr9_orig)):
         
@@ -118,6 +126,7 @@ for i in np.arange(len(names)):
 		S['Target'] = Train8_Y
 		dtree_model = MetaCost(S, alg, C).fit('Target', 3)
 
+		dt_model_temp[j] = dtree_model
 
 	# Test decision tree with the Test1 (1 subject out of 9 -> Dtree LOSO)
 		pred = dtree_model.predict(Test1_X)
@@ -162,13 +171,19 @@ for i in np.arange(len(names)):
 
 	subj_wds[i] = dtree_out_wds
 	subj_lbls[i] = dtree_out_lbls
-	subj_ind[i] = dtree_out_ind            
+	subj_ind[i] = dtree_out_ind
+
+	dtree_model_collection[i] = dt_model_temp           
 
 # save extractions:
-with open('tree_out_data.pkl', 'wb') as f:
+with open('dt_training_data.pkl', 'wb') as f:
 	pkl.dump(subj_wds, f)
 	pkl.dump(subj_lbls, f)
 	pkl.dump(subj_ind, f)
+
+with open('dt_testing_data.pkl', 'wb') as f:
 	pkl.dump(Test_orig_tot, f)
 	pkl.dump(Test_auxi_tot, f)
 	pkl.dump(Test_lbls_tot, f)
+	pkl.dump(dtree_model_collection, f)
+	pkl.dump(e_impact, f)

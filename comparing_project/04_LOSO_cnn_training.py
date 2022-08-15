@@ -1,16 +1,22 @@
 from utils_case import *
 from collections import Counter
 
-with open('tree_out_data.pkl', 'rb') as f:
+# with open('tree_out_data.pkl', 'rb') as f:
+with open('dt_training_data.pkl', 'rb') as f:
     trn_wds = pkl.load(f)
     trn_lbl = pkl.load(f)
     trn_ind = pkl.load(f)
-    tst_orig = pkl.load(f)
-    tst_auxi = pkl.load(f)
-    tst_lbls = pkl.load(f)
+
+# with open('dt_testing_data.pkl', 'rb') as f:
+#     tst_orig = pkl.load(f)
+#     tst_auxi = pkl.load(f)
+#     tst_lbls = pkl.load(f)
+#     dt_model_collection = pkl.load(f)
+#     e_impact = pkl.load(f)
 
 
-print(trn_wds.shape, trn_lbl.shape, trn_ind.shape, tst_orig.shape, tst_auxi.shape, tst_lbls.shape)
+# print(trn_wds.shape, trn_lbl.shape, trn_ind.shape, tst_orig.shape, tst_auxi.shape, tst_lbls.shape)
+print(trn_wds.shape, trn_lbl.shape, trn_ind.shape)
 
 
 for s in np.arange(10):
@@ -19,11 +25,12 @@ for s in np.arange(10):
     cnn_lbl_tot = trn_lbl[s]
     cnn_ind_tot = trn_ind[s]
 
-    cnn_tst_orig = tst_orig[s]
-    cnn_tst_auxi = tst_auxi[s]
-    cnn_tst_lbls = tst_lbls[s]
+    # cnn_tst_orig = tst_orig[s]
+    # cnn_tst_auxi = tst_auxi[s]
+    # cnn_tst_lbls = tst_lbls[s]
     
-    print(cnn_wds_tot.shape, cnn_tst_orig.shape)
+    # print(cnn_wds_tot.shape, cnn_tst_orig.shape)
+    print(cnn_wds_tot.shape)
 
     model_path = 'Output' + sls + 'out' + str(s) + sls + 'Models' + sls
     figure_path = 'Output' + sls + 'out' + str(s) + sls + 'Training_figures' + sls

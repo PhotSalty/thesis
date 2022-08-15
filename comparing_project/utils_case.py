@@ -9,7 +9,7 @@ import platform
 import pickle as pkl
 from copy import deepcopy
 from math import ceil, floor
-from scipy.signal import butter, filtfilt, argrelextrema
+from scipy.signal import butter, filtfilt, argrelextrema, find_peaks
 from sklearn import tree
 from matplotlib import pyplot as plt
 
@@ -256,7 +256,61 @@ def concatenate_subj_windows(dtree_out_wds, dtree_out_lbls, dtree_out_ind):
 
         return cnn_train_x, cnn_train_y, cnn_train_ind
 
-# 3. Plotting
+# 3. Evaluation
+
+def windows_eval_coeffs(testY, predY, pred_peaks):
+        tp, fp, fn, tn = 0, 0, 0, 0
+
+        # From predicion_peaks, we can only extract true and false positives
+        for p in pred_peaks:
+                
+                # Got a positive-class prediction - because of peaks() it is for sure == 1
+                if predY[p] == 1:
+
+                        # Prediction and actual class are positive
+                        if testY[p] == 1:
+                                tp += 1
+                        
+                        # Positive prediction on an actual negative class
+                        else:
+                                fp += 1
+
+        # false-negatives = actual-peaks - correctly-predicted-peaks
+        Test_peaks, _ = find_peaks(testY)
+        fn = Test_peaks.shape[0] - tp
+
+        ## The rest of the windows will be the true negatives
+        tn = testY.shape[0] - tn - fp - fn
+
+        return tp, fp, fn, tn
+
+
+def calculate_metrics(cm):
+
+        cm_df = pd.DataFrame(cm, 
+                columns = ['Predicted Negative', 'Predicted Positive'],
+                index = ['Actual Negative', 'Actual Positive'])
+
+        print(cm_df)
+        
+        tn, fp, fn, tp = cm.ravel()
+        
+        '''
+        > weighted accuracy:
+
+                wacc = (tp_rate + tn_rate) / 2  =  ( (tp / (tp + fn)) + (tn / (tn + fp)) ) / 2
+
+        '''
+        # Acc  = (tp + tn) / (tp + tn + fp + fn)
+        # Acc  = (tp*wgt + tn) / ((tp + fn)*wgt + fp + tn)      # equal method
+        Acc  = ( (tp / (tp + fn)) + (tn / (tn + fp)) ) / 2
+        Prec = tp / (tp + fp)
+        Rec  = tp / (tp + fn)
+        F1s  = 2 * (Prec * Rec) / (Prec + Rec)
+
+        return Acc, Prec, Rec, F1s
+
+# 4. Plotting
 
 def print_eimpact(s_auxi, e_impact, mode):
         
@@ -279,9 +333,18 @@ def print_eimpact(s_auxi, e_impact, mode):
         plt.legend( loc = 'upper left', shadow = True, fontsize = 'large', labelcolor = '#ededed', facecolor = '#536878', borderpad = 1.5)
         plt.show()
 
+### Display given method's metrics
+def print_metrics(Acc, Prec, Rec, F1s, mtype):
+	print(f'\n > {mtype} metrics:') 
+	print(f'''
+\tWeighted Accuracy   ->   {Acc:.3f}
+\tPrecision           ->   {Prec:.3f}
+\tRecall              ->   {Rec:.3f}
+\tF1-score            ->   {F1s:.3f}\n'''.expandtabs(6))
 
 
-# 4. Initialize basic variables
+
+# 5. Initialize basic variables
 
 def system_check():
         
