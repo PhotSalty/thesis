@@ -196,12 +196,12 @@ def counter_weights():
 	from sklearn.utils import class_weight
 
 	a = np.zeros(20)
-	ind = np.random.randint(0, 20, size = 5)
+	ind = np.random.randint(0, 19, size = 5)
 	a[ind] = 1
 	
 	d = {
-		0. : 15.,
-		1. : 5.
+		1. : 5.,
+		0. : 15.
 	}
 
 	d1 = dict(Counter(a))
@@ -209,11 +209,27 @@ def counter_weights():
 	print(Counter(a))
 	print(d)
 	print(d1)
+	print(d[0])
 
-	class_weights = class_weight.compute_class_weight(class_weight = 'balanced', classes = np.unique(a), y = a)
+	q = [[0.6, 0.8, 0.3], [0.2, 0.4, 0.5]]
+	print(q, np.round(q))
+	# if d[0] > d[1]:
+	# 	max_d = d[0]
+	# else:
+	# 	max_d = d[1]
+
+	# d.update({0 : max_d / d[0], 1 : max_d / d[1]} )
+	# print(d)
+
+	# class_weights = class_weight.compute_class_weight(class_weight = 'balanced', classes = np.unique(a), y = a)
 	
-	print('\n', class_weights)
-	print(15*class_weights[0], 5*class_weights[1])
+	# print('\n', class_weights)
+	# print(15*class_weights[0], 5*class_weights[1])
+	
+	# class_weights = np.asarray([class_weights[1], class_weights[0]])
+	# print('\n', class_weights)
+	# print(15*class_weights[1], 5*class_weights[0])
+	
 	# # w0 = 15 / 15
 	# # w1 = 15 / 5
 	# print(f'Weights: \n\tclass_0 -> {w0} \n\tclass_1 -> {w1}'.expandtabs(4))
