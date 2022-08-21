@@ -8,7 +8,7 @@ import os
 import numpy as np
 import pandas as pd
 import pickle as pkl
-from scipy.signal import filtfilt, butter, find_peaks
+from scipy.signal import filtfilt, butter, find_peaks, argrelextrema
 from tkinter.font import BOLD
 from copy import deepcopy
 import sys
