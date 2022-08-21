@@ -63,17 +63,17 @@ else:
 ## Model Testing
 
 # 1. Retrieve original - raw data
-pkl_path = base_path + sls + 'data' + sls + 'pickle_output' + sls + 'raw_data_' + str(n_subjects) + '_' + file_folder + '.pkl'
-with open(pkl_path, 'rb') as f:
-        windows = pkl.load(f)
-        labels = pkl.load(f)
-        tag = pkl.load(f)
-        timestamps = pkl.load(f)
-        means = pkl.load(f)
-        stds = pkl.load(f)
+#pkl_path = base_path + sls + 'data' + sls + 'pickle_output' + sls + 'raw_data_' + str(n_subjects) + '_' + file_folder + '.pkl'
+#with open(pkl_path, 'rb') as f:
+ #       windows = pkl.load(f)
+ #       labels = pkl.load(f)
+ #       tag = pkl.load(f)
+ #       timestamps = pkl.load(f)
+ #       means = pkl.load(f)
+ #       stds = pkl.load(f)
 
 # 2. Perform training, display results and save prediction plots
-LOSO_testing(windows, labels, tag, means, stds, epochs, n_subjects, mdl_path)
+#LOSO_testing(windows, labels, tag, means, stds, epochs, n_subjects, mdl_path)
 
 
 
