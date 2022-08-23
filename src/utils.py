@@ -5,11 +5,11 @@
 import random as rand
 from math import floor, ceil
 import os
+from turtle import speed
 import numpy as np
 import pandas as pd
 import pickle as pkl
 from scipy.signal import filtfilt, butter, find_peaks, argrelextrema
-from tkinter.font import BOLD
 from copy import deepcopy
 import sys
 import platform
@@ -738,3 +738,82 @@ def calculate_metrics(cm):
 
         return Acc, Prec, Rec, F1s
 
+
+##################################################################################################################
+
+
+
+
+
+##### POST PROCESSING ############################################################################################
+
+# 1. Extract the speed value of true-positive spikes
+def speed_calculator(wds):
+        spk_speed = []
+        for i in wds:
+                spk = i * 9.8         # g to m/sec^2
+                spk_axs_norm = np.linalg.norm(spk, 1, axis = 1)
+                
+                # Max amplitude
+                max_i = np.argmax(spk_axs_norm)
+                l_min_0 = argrelextrema(spk_axs_norm[:max_i+1], np.less)[0][-1]
+                l_min_1 = argrelextrema(spk_axs_norm[max_i:], np.less)[0][0]
+
+                spk_time = (l_min_1 - l_min_0) / 64         # in sec
+                spk_time = spk_time * 1000                  # in msec
+                spike_samples = np.arange(start = l_min_0, stop = l_min_1)
+                '''
+                acceleration:
+                spike_start : spike_max  ->  c*x , c > 0
+                spike_max   : spike_stop -> -c*x , c > 0
+                '''
+                max_v = np.trapz(spk_axs_norm[ spike_samples ])
+
+                spk_speed.append(max_v)
+        
+        return spk_speed
+
+
+def spk_speed(results, n_subjects):
+
+        pred_spk_spd = np.zeros(10, dtype = object)
+        pred_spk_ind = np.zeros(10, dtype = object)
+        true_spk_spd = np.zeros(10, dtype = object)
+        true_spk_ind = np.zeros(10, dtype = object)
+        
+        for s in n_subjects:
+        
+        # Subject initialization
+                target = results[s, 0]
+                pred = results[s, 1]
+                orig_wds = results[s, 2]
+
+        # Calculate predicted spikes speed
+                p, _ = find_peaks(pred[:, 0], distance = 22)
+
+                pred_peaks = np.zeros(pred.shape, dtype = np.float64)
+                pred_peaks[p] = pred[p]
+
+                # Eliminating false positives
+                tp_pred = deepcopy(pred_peaks)
+                for i in p:
+                        if target[i] == 0:
+                                tp_pred[i] = 0
+
+                tp_spk_ind = np.nonzero(tp_pred)
+                spikes_pred = orig_wds[tp_spk_ind]
+
+                spk_speed = speed_calculator(spikes_pred)
+                
+                pred_spk_ind[s] = tp_pred
+                pred_spk_spd[s] = spk_speed
+
+        # Calculate original spikes speed
+                p, _ = find_peaks(target)
+
+                spk_speed = speed_calculator(orig_wds[p])
+
+                true_spk_ind[s] = p
+                true_spk_spd[s] = spk_speed
+
+        return true_spk_ind, true_spk_spd, pred_spk_ind, pred_spk_spd

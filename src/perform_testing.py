@@ -31,6 +31,10 @@ else:
     print('Not a valid input, please try again')
 
 
+with open (f'pickles{sls}testing_results.pkl', 'wb') as f:
+    pkl.dump(results, f)
+    pkl.dump(n_subjects, f)
+
 # Random predicted spike:
 def plot_selected_spike(sbj):
 
@@ -65,33 +69,3 @@ def plot_selected_spike(sbj):
     plt.show()
 
 # plot_selected_spike(3)
-
-for s in n_subjects:
-
-    target = results[s, 0]
-    pred = results[s, 1]
-    orig_wds = results[s, 2]
-
-    p, _ = find_peaks(pred[:, 0], distance = 22)
-    spike_pos = np.nonzero(p)
-    pos_pred = np.asarray(np.where(pred == 1))
-    print(spike_pos, pos_pred)
-
-    spikes = orig_wds[spike_pos]
-
-    for spk in spikes:
-
-        max_i = np.argmax(spk)
-        l_min_0 = argrelextrema(spk[:max_i+1], np.less)[0][-1]
-        l_min_1 = argrelextrema(spk[max_i:], np.less)[0][0]
-
-        spk_time = (l_min_1 - l_min_0) / 64         # in sec
-        spk_time = spk_time * 1000                  # in msec
-
-        '''
-        acceleration:
-        
-           spike_start : spike_max  ->  c*x , c > 0
-             spike_max : spike_stop -> -c*x , c > 0
-
-        '''

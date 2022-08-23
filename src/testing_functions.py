@@ -42,7 +42,7 @@ def LOSO_testing(windows, labels, tag, means, stds, epochs, n_subjects, mdl_path
 #       is0_tot = 0
 
 # Saving results:
-        results = np.zeros((n_subjects, 2), dtype = object)
+        results = np.zeros((n_subjects, 3), dtype = object)
         ri = 0
 
 # LOSO iterations through subjects
@@ -76,6 +76,7 @@ def LOSO_testing(windows, labels, tag, means, stds, epochs, n_subjects, mdl_path
 
                 results[ri, 0] = Test_Y
                 results[ri, 1] = pred_Y
+                results[ri, 2] = Test_X
                 ri += 1                
 
         # Construct and save a plot for the prediction results
