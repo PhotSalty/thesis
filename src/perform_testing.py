@@ -31,6 +31,9 @@ else:
     print('Not a valid input, please try again')
 
 
+if not os.path.exists(f'pickles{sls}'):
+    os.makedirs(f'pickles{sls}')
+
 with open (f'pickles{sls}testing_results.pkl', 'wb') as f:
     pkl.dump(results, f)
     pkl.dump(n_subjects, f)
