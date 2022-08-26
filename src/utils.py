@@ -379,6 +379,50 @@ def subjects_init(names):
         return subjects, ns, po, ne
 
 
+def subjects_init_raw(names, window_length):
+        
+        print(f'\n# Subjects Before augmentation:')
+
+        subjects = list()
+        ns = list()
+        po = list()
+        ne = list()
+        subjects_spike_length = list()
+        pos = 0
+        neg = 0
+
+        for i in np.arange(len(names)):
+                
+                n = names[i]
+
+                if i < 9:
+                        tg = '0' + str(i+1)
+                else:
+                        tg = str(i+1)
+
+                subjects.append(recording(name = n, tag = tg))
+
+                subjects[i].read_data()
+                subjects[i].filtering()
+                subjects[i].windowing(subjects[i].raw_acc, subjects[i].raw_ang, subjects[i].spikes, window_length)
+
+                unique, counts = np.unique(subjects[i].labels, return_counts=True)
+                d = dict(zip(unique, counts))
+                print(f'\n  Subject_{subjects[i].tag} name: {subjects[i].name}:')
+                print(f'    Negative windows: {d[0.0]}')
+                print(f'    Positive windows: {d[1.0]}')
+                neg += d[0.0]
+                pos += d[1.0]
+                ne.append(d[0.0])
+                po.append(d[1.0])
+                ns.append(d[0.0]//d[1.0])
+
+
+        print(f'\n  Total:\n    Positives = {pos}\n    Negatives = {neg}')
+
+        return subjects, ns, po, ne
+
+
 # 3. Display base's statistical analysis
 def display_base_stats(subjects):
 
@@ -750,26 +794,32 @@ def calculate_metrics(cm):
 # 1. Extract the speed value of true-positive spikes
 def speed_calculator(wds):
         spk_speed = []
+        pli = 0
         for i in wds:
                 spk = i * 9.8         # g to m/sec^2
                 spk_axs_norm = np.linalg.norm(spk, 1, axis = 1) 
                 # Max amplitude
-                max_i = np.argmax(spk_axs_norm)
+                #max_i = np.argmax(spk_axs_norm)
+                max_i = np.argmin(spk[:, 2])
                 
                 # if there is no local minima before max, from the start of the window,
                 # select the first window value/minimum. Else, pick the last minima.
-                l_min_0 = argrelextrema(spk_axs_norm[:max_i+1], np.less)[0]
+                #l_min_0 = argrelextrema(spk_axs_norm[:max_i+1], np.less)[0]
+                l_min_0 = argrelextrema(spk[:max_i+1, 2], np.greater)[0]
                 if np.shape(l_min_0)[0] == 0:
-                    l_min_0 = np.argmin(spk_axs_norm[:max_i+1])
+                    #l_min_0 = np.argmin(spk_axs_norm[:max_i+1])
+                    l_min_0 = np.argmax(spk[:max_i+1, 2])
                     # print(l_min_0)
                 else:
                     l_min_0 = l_min_0[-1]
                 
                 # if there is no local minima after max until the end of the window,
                 # select the last window value. Else, pick the first minima.
-                l_min_1 = argrelextrema(spk_axs_norm[max_i:], np.less)[0]
+                #l_min_1 = argrelextrema(spk_axs_norm[max_i:], np.less)[0]
+                l_min_1 = argrelextrema(spk[max_i:, 2], np.greater)[0]
                 if np.shape(l_min_1)[0] == 0:
-                    l_min_1 = max_i + np.argmin(spk_axs_norm[max_i:])
+                    #l_min_1 = max_i + np.argmin(spk_axs_norm[max_i:])
+                    l_min_1 = max_i + np.argmax(spk[max_i:, 2])
                     # print(l_min_1)
                 else:
                     l_min_1 = max_i + l_min_1[0]
@@ -777,23 +827,39 @@ def speed_calculator(wds):
                 # print(l_min_0, max_i, l_min_1)
 
                 spk_time = (l_min_1 - l_min_0) / 64         # in sec
-                spk_time = spk_time * 1000                  # in msec
+                #spk_time = spk_time * 1000                  # in msec
                 spike_samples = np.arange(start = l_min_0, stop = l_min_1)
                 '''
                 acceleration:
                 spike_start : spike_max  ->  c*x , c > 0
                 spike_max   : spike_stop -> -c*x , c > 0
                 '''
-                max_v = np.trapz(spk_axs_norm[ spike_samples ])
-
+                max_v_x = np.trapz(spk[ spike_samples, 0 ]) * spk_time
+                max_v_y = np.trapz(spk[ spike_samples, 1 ]) * spk_time
+                max_v_z = np.trapz(spk[ spike_samples, 2 ]) * spk_time
+                max_v = np.sqrt(max_v_x**2 + max_v_y**2 + max_v_z**2)
+                
+                #print(l_min_0, max_i, l_min_1)
+                
+                if pli == 15:
+                    fig = plt.figure()
+                    plt.plot(spk)
+                    plt.grid()
+                    plt.axvspan(xmin = l_min_0, xmax = l_min_1, color = 'lightgreen', alpha = 0.5)
+                    plt.axvline(max_i, color = 'red', linestyle = 'dashed', linewidth = 2)
+                                    
+                pli += 1
                 spk_speed.append(max_v)
                 
-        print(np.shape(spk_speed))
+        #print(np.shape(spk_speed))
         return spk_speed
 
 
 def spk_speed(results, n_subjects):
 
+        names = np.asarray(['sltn', 'gali', 'sdrf', 'pasx', 'anti', 'komi', 'fot', 'agge', 'conp', 'LH_galios'])
+        subj, _, _, _ = subjects_init_raw(names)
+        
         pred_spk_spd = np.zeros(10, dtype = object)
         pred_spk_ind = np.zeros(10, dtype = object)
         true_spk_spd = np.zeros(10, dtype = object)
@@ -804,12 +870,16 @@ def spk_speed(results, n_subjects):
         # Subject initialization
                 target = results[s, 0]
                 pred = results[s, 1]
-                orig_wds = results[s, 2]
+                #orig_wds = results[s, 2]
+                orig_wds = subj[s].windows
+
+                orig_wds = orig_wds[:, :, :3]
+                #print(orig_wds.shape)
                 
                 #print(orig_wds.shape)
         # Calculate predicted spikes speed
                 p, _ = find_peaks(pred[:, 0], distance = 22)
-
+                
                 pred_peaks = np.zeros(pred.shape, dtype = np.float64)
                 pred_peaks[p] = pred[p]
 
@@ -822,18 +892,89 @@ def spk_speed(results, n_subjects):
                 tp_spk_ind = np.nonzero(tp_pred)[0]
                 #print(tp_spk_ind.shape)
                 spikes_pred = orig_wds[tp_spk_ind]
-
-                spk_speed = speed_calculator(spikes_pred)
                 
+                # m/s
+                spk_speed = np.asarray(speed_calculator(spikes_pred))
+                # km/h
+                spk_speed = spk_speed * (60 * 60) / 1000
+                
+                #if s == 2:
+                #    plt.plot(spikes_pred[0])
+
                 pred_spk_ind[s] = tp_spk_ind
                 pred_spk_spd[s] = spk_speed
 
         # Calculate original spikes speed
                 p, _ = find_peaks(target)
 
-                spk_speed = speed_calculator(orig_wds[p])
+                spk_speed = np.asarray(speed_calculator(orig_wds[p]))
+                # km/h
+                spk_speed = spk_speed * (60 * 60) / 1000
 
                 true_spk_ind[s] = p
                 true_spk_spd[s] = spk_speed
+
+        return true_spk_ind, true_spk_spd, pred_spk_ind, pred_spk_spd
+
+
+
+def spk_speed_1(results, name):
+
+        subj, _, _, _ = subjects_init_raw(name, 43)
+        
+        #pred_spk_spd = np.zeros(10, dtype = object)
+        #pred_spk_ind = np.zeros(10, dtype = object)
+        #true_spk_spd = np.zeros(10, dtype = object)
+        #true_spk_ind = np.zeros(10, dtype = object)
+        
+        # Subject initialization
+        target = results[0]
+        pred = results[1]
+        #orig_wds = results[s, 2]
+        orig_wds = subj[0].windows
+
+        orig_wds = orig_wds[:, :, :3]
+        #print(orig_wds.shape)
+                
+        #print(orig_wds.shape)
+        # Calculate predicted spikes speed
+        p, _ = find_peaks(pred[:, 0], distance = 22)
+       
+        pred_peaks = np.zeros(pred.shape, dtype = np.float64)
+        pred_peaks[p] = pred[p]
+
+        # Eliminating false positives
+        tp_pred = deepcopy(pred_peaks)
+        for i in p:
+                if target[i] == 0:
+                        tp_pred[i] = 0
+
+        tp_spk_ind = np.nonzero(tp_pred)[0]
+        #print(tp_spk_ind)
+        #print(tp_spk_ind.shape)
+        spikes_pred = orig_wds[tp_spk_ind]
+       
+        # m/s
+        spk_speed = np.asarray(speed_calculator(spikes_pred))
+        # km/h
+        spk_speed = spk_speed * (60 * 60) / 1000
+       
+        #if s == 2:
+        #    plt.plot(spikes_pred[0])
+
+        pred_spk_ind = tp_spk_ind
+        pred_spk_spd = spk_speed
+
+        # Calculate original spikes speed
+        p, _ = find_peaks(target)
+
+        spk_speed = np.asarray(speed_calculator(orig_wds[p]))
+        # km/h
+        spk_speed = spk_speed * (60 * 60) / 1000
+
+        true_spk_ind = p
+        true_spk_spd = spk_speed
+
+        #plt.show()
 
         return true_spk_ind, true_spk_spd, pred_spk_ind, pred_spk_spd
