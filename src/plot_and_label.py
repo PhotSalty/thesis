@@ -16,19 +16,23 @@ def labeling_samples(dat, k, axs, spks, stp):
 
 	axs[k].set_xlabel('samples')
 	
-	# define annotation bound
-	if stp == 'raw':
-		ab = 2600
-		ext = 17
-	elif stp == 'filt':
-		ab = 900
-		ext = 6.5
+	# # define annotation bound
+	# if stp == 'raw':
+	# 	ab = 2600
+	# 	ext = 17
+	# elif stp == 'filt':
+	# 	ab = 900
+	# 	ext = 6.5
 
 	# annotate spikes
 	j = 1
+	posy = np.min( dat )
 	for i in spks:
-		axs[k].fill_between(x = i, y1 = -ab*k - ext, y2 = ab*k + ext, color = 'white')
-		axs[k].annotate(str(j), (i[0] + (i[1]-i[0])/2 - 1,  -ab*k - ext), color = 'black')
+		# posx = int(np.floor(i[0] + (i[1]-i[0])/2 - 1))
+		posx = i[0]
+		# axs[k].fill_between(x = i, y1 = -ab*k - ext, y2 = ab*k + ext, color = 'white')
+		axs[k].axvspan(xmin = i[0], xmax = i[1], color = 'white')
+		axs[k].annotate(str(j), (posx,  posy), color = 'black')
 		j = j + 1
 
 	
@@ -86,9 +90,13 @@ def labeling_seconds(dat, k, axs, spks, stp):
 
 	j = 1
 	# annotate spikes
+	posy = np.min( dat )
 	for i in spks:
-		axs[k].fill_between(x = i, y1 = -ab*k - ext, y2 = ab*k + ext, color = 'white')
-		axs[k].annotate(str(j), (i[0] + (i[1]-i[0])/2 - 1,  -ab*k - ext), color = 'black')
+		posx = i[0]
+		# axs[k].fill_between(x = i, y1 = -ab*k - ext, y2 = ab*k + ext, color = 'white')
+		axs[k].axvspan(xmin = i[0], xmax = i[1], color = 'white')
+		axs[k].annotate(str(j), (posx,  posy), color = 'black')
+		# axs[k].annotate(str(j), (i[0] + (i[1]-i[0])/2 - 1,  -ab*k - ext), color = 'black')
 		j = j + 1
 
 	
@@ -160,26 +168,29 @@ while not flag:
 
 # print(f'\n\n{subj_number}')
 
-if subj_number == 1:
-    name = 'sltn'
-elif subj_number == 2:
-    name = 'gali'
-elif subj_number == 3:
-    name = 'sdrf'
-elif subj_number == 4:
-	name = 'pasx'
-elif subj_number == 5:
-	name = 'anti'
-elif subj_number == 6:
-	name = 'komi'
-elif subj_number == 7:
-	name = 'fot'
-elif subj_number == 8:
-	name = 'agge'
-elif subj_number == 9:
-	name = 'conp'
-elif subj_number == 10:
-	name = 'LH_galios'
+names = np.asarray(['sltn', 'gali', 'sdrf', 'pasx', 'anti', 'komi', 'fot', 'agge', 'conp', 'LH_galios'])
+name = names[subj_number-1]
+
+# if subj_number == 1:
+#     name = 'sltn'
+# elif subj_number == 2:
+#     name = 'gali'
+# elif subj_number == 3:
+#     name = 'sdrf'
+# elif subj_number == 4:
+# 	name = 'pasx'
+# elif subj_number == 5:
+# 	name = 'anti'
+# elif subj_number == 6:
+# 	name = 'komi'
+# elif subj_number == 7:
+# 	name = 'fot'
+# elif subj_number == 8:
+# 	name = 'agge'
+# elif subj_number == 9:
+# 	name = 'conp'
+# elif subj_number == 10:
+# 	name = 'LH_galios'
 
 
 flag = False
