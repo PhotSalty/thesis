@@ -922,11 +922,6 @@ def spk_speed_1(results, name):
 
         subj, _, _, _ = subjects_init_raw(name, 43)
         
-        #pred_spk_spd = np.zeros(10, dtype = object)
-        #pred_spk_ind = np.zeros(10, dtype = object)
-        #true_spk_spd = np.zeros(10, dtype = object)
-        #true_spk_ind = np.zeros(10, dtype = object)
-        
         # Subject initialization
         target = results[0]
         pred = results[1]
@@ -967,14 +962,120 @@ def spk_speed_1(results, name):
 
         # Calculate original spikes speed
         p, _ = find_peaks(target)
+        
+        print(p)
+        trg_spk_ind = []
+        for i in np.arange(len(p)):
+            for j in np.arange(len(tp_spk_ind)):
+                if np.abs(p[i] - tp_spk_ind[j]) < 15:
+                    trg_spk_ind.append(p[i])
+        
+        print(trg_spk_ind)
+        print(np.asarray(tp_spk_ind))
+        trg_spk_ind = np.asarray(trg_spk_ind)
+        spikes_target = orig_wds[trg_spk_ind]
 
-        spk_speed = np.asarray(speed_calculator(orig_wds[p]))
+        spk_speed = np.asarray(speed_calculator(spikes_target))
         # km/h
         spk_speed = spk_speed * (60 * 60) / 1000
 
-        true_spk_ind = p
+        true_spk_ind = trg_spk_ind 
         true_spk_spd = spk_speed
 
         #plt.show()
 
         return true_spk_ind, true_spk_spd, pred_spk_ind, pred_spk_spd
+
+
+def flight_time(results, name):
+
+        subj, _, _, _ = subjects_init_raw(name, 43)
+        
+        # Subject initialization
+        target = results[0]
+        pred = results[1]
+        pred = np.where(pred < 0.6, 0, 1)
+        #orig_wds = results[s, 2]
+        #orig_wds = subj[0].windows
+
+        #orig_wds = orig_wds[:, :, :3]
+        #print(orig_wds.shape)
+        
+        spk = subj[0].spikes
+        trg_str_stp = []
+        prd_str_stp = []
+        
+        # Select only spike-windows
+        trg_spk = np.asarray(np.nonzero(target))
+        prd_spk = np.asarray(np.nonzero(pred))
+        
+        # 1st spike - starting window
+        trg_str_stp.append(trg_spk[0])
+        prd_str_stp.append(prd_spk[0])
+        
+        # Save spikes' starting and stopping windows
+        for i, j in zip(np.arange(len(trg_spk))[1:-1], np.arange(len(prd_spk))[1:-1]):
+            
+            if trg_spk[i] - trg_spk[i-1] > 1 or trg_spk[i] - trg_spk[i+1] > 1:
+                trg_str_stp.append(trg_spk[i])
+
+            if prd_spk[i] - prd_spk[i-1] > 1 or prd_spk[i+1] - prd_spk[i] > 1:
+                prd_str_stp.append(prd_spk[i])
+
+        # last spike - stopping window
+        trg_str_stp.append(trg_spk[-1])
+        prd_str_stp.append(prd_spk[-1])
+
+
+        trg_str = []
+        trg_stp = []
+        prd_str = []
+        prd_stp = []
+        flagt = False
+        flagp = False 
+        for i in np.arange(len(target)):
+            
+            if target[i] == 1 and flagt == False:
+                trg_str.append(i)
+                flagt = True            
+            elif target[i] == 0 and flagt == True:
+                trg_stp.append(i-1)
+                flagt = False
+
+            if pred[i] == 1  and flagp == False:
+                prd_str.append(i)
+                flagp = True
+            elif pred[i] == 0 and flagp == True:
+                prd_stp.append(i-1)
+                flagp = False
+
+        trg_stp = np.asarray(trg_stp)
+        trg_str = np.asarray(trg_str)
+        prd_stp = np.asarray(prd_stp)
+        prd_str = np.asarray(prd_str)
+        
+        inds = []
+        for i in np.arange(len(prd_str)):
+
+            if prd_stp[i] - prd_str[i] < 5:
+                inds.append(i)
+
+        inds = np.asarray(inds)
+        prd_str = np.delete(prd_str, inds)
+        prd_stp = np.delete(prd_stp, inds)
+        
+        #trg_spikes = np.asarray(trg_stp) - np.asarray(trg_str)
+        #prd_spikes = np.asarray(prd_stp) - np.asarray(prd_str)
+        
+        # Reshape as rows: [start, stop]
+        #trg_spikes_ss = np.reshape(trg_str_stp, (len(spk), 2))
+        #prd_spikes_ss = np.reshape(prd_str_stp, (len(spk), 2))
+        #trg_spikes_ss = np.reshape(trg_str_stp, (len(trg_str_stp)/2, 2))
+        #prd_spikes_ss = np.reshape(prd_str_stp, (len(prd_str_stp)/2, 2))
+
+        # Number of continuous positive windows, for the same spike
+        #trg_spikes = trg_spikes_ss[:, 1] - trg_spikes_ss[:, 0]
+        #prd_spikes = prd_spikes_ss[:, 1] - prd_spikes_ss[:, 0]
+
+        return trg_str, trg_stp, prd_str, prd_stp 
+
