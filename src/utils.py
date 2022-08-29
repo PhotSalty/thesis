@@ -833,7 +833,7 @@ def speed_calculator(wds):
                 else:
                     l_min_1 = max_i + l_min_1[0]
                 
-                l_min_1 = max_i + 0.03
+                l_min_1 = max_i + round(0.03*64)
                 # print(l_min_0, max_i, l_min_1)
 
                 spk_time = (l_min_1 - l_min_0) / 64         # in sec
