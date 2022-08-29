@@ -73,10 +73,7 @@ while not flag:
                 flag = True
 
         elif ind_type == 2:
-                        
-            print('\nNot ready.')
-
-            #tr_flt_time, tr_flt_ind, prd_flt_time, prd_flt_ind = flight_time(results[s], name)
+            
             tr_str, tr_stp, pr_str, pr_stp = flight_time(results[s], name)
 
             while np.shape(tr_str)[0] > np.shape(pr_str)[0]:

@@ -807,7 +807,7 @@ def speed_calculator(wds):
                 max_y = np.argwhere(spk[:, 1] == np.max(spk[:, 1])).flatten()
                 max_z = np.argwhere(spk[:, 2] == np.min(spk[:, 2])).flatten()
 
-                print(max_y, '\n', max_z)
+                # print(max_y, '\n', max_z)
                 for foo1 in np.arange(max_y.shape[0]):
                         for foo2 in np.arange(max_z.shape[0]):
                                 if max_y[foo1] == max_z[foo2]:
@@ -833,6 +833,7 @@ def speed_calculator(wds):
                 else:
                     l_min_1 = max_i + l_min_1[0]
                 
+                l_min_1 = max_i + 0.03
                 # print(l_min_0, max_i, l_min_1)
 
                 spk_time = (l_min_1 - l_min_0) / 64         # in sec
@@ -851,8 +852,11 @@ def speed_calculator(wds):
                 #print(l_min_0, max_i, l_min_1)
                 
                 if pli == 13:
+                    print(max_v_x, max_v_y, max_v_z)
                     fig = plt.figure()
                     plt.plot(spk)
+                    plt.ylabel('m/{}s\u00b2".format(area)')
+                    plt.xlabel('samples')
                     plt.grid()
                     plt.axvspan(xmin = l_min_0, xmax = l_min_1, color = 'lightgreen', alpha = 0.5)
                     plt.axvline(max_i, color = 'red', linestyle = 'dashed', linewidth = 2)
