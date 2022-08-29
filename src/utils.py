@@ -807,6 +807,7 @@ def speed_calculator(wds):
                 max_y = np.argwhere(spk[:, 1] == np.min(spk[:, 1])).flatten()
                 max_z = np.argwhere(spk[:, 2] == np.max(spk[:, 2])).flatten()
 
+                print(max_y, '\n', max_z)
                 for foo1 in np.arange(max_y.shape[0]):
                         for foo2 in np.arange(max_z.shape[0]):
                                 if max_y[foo1] == max_z[foo2]:
