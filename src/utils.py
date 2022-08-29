@@ -797,22 +797,32 @@ def calculate_metrics(cm):
 ##### POST PROCESSING ############################################################################################
 
 # 1. Extract the speed value of true-positive spikes
-def speed_calculator(wds):
+def speed_calculator(wds, snum):
         spk_speed = []
         pli = 0
         for i in wds:
-                spk = i * 9.8         # g to m/sec^2
+                spk = i * 9.80665         # g to m/sec^2
+
                 spk_axs_norm = np.linalg.norm(spk, 1, axis = 1) 
                 # Max amplitude
-                max_y = np.argwhere(spk[:, 1] == np.max(spk[:, 1])).flatten()
-                max_z = np.argwhere(spk[:, 2] == np.min(spk[:, 2])).flatten()
-
+                max_y = np.argwhere(spk[:, 1] == np.amax(spk[:, 1])).flatten()
+                max_z = np.argwhere(spk[:, 2] == np.amin(spk[:, 2])).flatten()
+                #print('\n\tspike: ', pli, '\n')
+                #print(max_y, max_z)
                 # print(max_y, '\n', max_z)
-                for foo1 in np.arange(max_y.shape[0]):
-                        for foo2 in np.arange(max_z.shape[0]):
-                                if max_y[foo1] == max_z[foo2]:
-                                        max_i = max_y[foo1]
+                max_i = 0
+                for my in max_y:
+                        for mz in max_z:
+                                if my == mz:
+                                    max_i = my
+
+                if max_i == 0:
+                    samps = spk[max_z, 1]
+                    smax = np.argmax(samps)
+                    max_i = max_z[smax]
                 
+                #print(max_i, spk[max_i, 1:])
+                #print('\n\n')
                 # if there is no local minima before max, from the start of the window,
                 # select the first window value/minimum. Else, pick the last minima.
                 l_min_0 = argrelextrema(spk[:max_i+1, 2], np.greater)[0]
@@ -822,6 +832,8 @@ def speed_calculator(wds):
                 else:
                     l_min_0 = l_min_0[-1]
                 
+                #l_min_0 += 1
+
                 # if there is no local minima after max until the end of the window,
                 # select the last window value. Else, pick the first minima.
                 #l_min_1 = argrelextrema(spk_axs_norm[max_i:], np.less)[0]
@@ -833,30 +845,38 @@ def speed_calculator(wds):
                 else:
                     l_min_1 = max_i + l_min_1[0]
                 
-                l_min_1 = max_i + round(0.03*64)
+                #l_min_1 = max_i + 1
                 # print(l_min_0, max_i, l_min_1)
 
-                spk_time = (l_min_1 - l_min_0) / 64         # in sec
+                l_min_0 = max_i - 3
+                l_min_1 = max_i + 1
+
+                spk_time = (l_min_1-1 - l_min_0) / 64         # in sec
+                #spk_time = (l_min_1-2 - l_min_0) / 64         # in sec
+                #print(spk_time)
                 #spk_time = spk_time * 1000                  # in msec
                 spike_samples = np.arange(start = l_min_0, stop = l_min_1)
+                #spike_samples = np.arange(start = l_min_0, stop = max_i)
                 '''
                 acceleration:
                 spike_start : spike_max  ->  c*x , c > 0
                 spike_max   : spike_stop -> -c*x , c > 0
                 '''
-                max_v_x = np.trapz(spk[ spike_samples, 0 ]) * spk_time
-                max_v_y = np.trapz(spk[ spike_samples, 1 ]) * spk_time
-                max_v_z = np.trapz(spk[ spike_samples, 2 ]) * spk_time
+                #print(spk_time)
+                # velocity = sum(acceleration) * sec/sample
+                max_v_x = np.trapz(spk[ spike_samples, 0 ]) / 64# * spk_time
+                max_v_y = 0#np.trapz(spk[ spike_samples, 1 ]) * spk_time
+                max_v_z = np.trapz(spk[ spike_samples, 2 ]) / 64# * spk_time
                 max_v = np.sqrt(max_v_x**2 + max_v_y**2 + max_v_z**2)
-                
+                #max_v = np.trapz(spk_axs_norm[spike_samples]) * spk_time
+                max_v = max_v * 60 * 60 / 1000
                 #print(l_min_0, max_i, l_min_1)
                 
-                if pli == 13:
-                    print(max_v_x, max_v_y, max_v_z)
+                if pli == snum:
                     fig = plt.figure()
                     plt.plot(spk)
-                    plt.ylabel('m/{}s\u00b2".format(area)')
-                    plt.xlabel('samples')
+                    plt.ylabel(r'$\dfrac{m}{s^{2}}$', fontsize = 11, labelpad = -10)
+                    plt.xlabel('samples', fontsize = 12)
                     plt.grid()
                     plt.axvspan(xmin = l_min_0, xmax = l_min_1, color = 'lightgreen', alpha = 0.5)
                     plt.axvline(max_i, color = 'red', linestyle = 'dashed', linewidth = 2)
@@ -961,9 +981,11 @@ def spk_speed_1(results, name):
         #print(tp_spk_ind)
         #print(tp_spk_ind.shape)
         spikes_pred = orig_wds[tp_spk_ind]
-       
+        
+        # which spike to plot
+        snum = int(float(input(f'\n\t- Select the spike to plot: '.expandtabs(6))))
         # m/s
-        spk_speed = np.asarray(speed_calculator(spikes_pred))
+        spk_speed = np.asarray(speed_calculator(spikes_pred, snum))
         # km/h
         spk_speed = spk_speed * (60 * 60) / 1000
        
@@ -976,19 +998,19 @@ def spk_speed_1(results, name):
         # Calculate original spikes speed
         p, _ = find_peaks(target)
         
-        print(p)
+        #print(p)
         trg_spk_ind = []
         for i in np.arange(len(p)):
             for j in np.arange(len(tp_spk_ind)):
                 if np.abs(p[i] - tp_spk_ind[j]) < 15:
                     trg_spk_ind.append(p[i])
         
-        print(trg_spk_ind)
-        print(np.asarray(tp_spk_ind))
+        #print(trg_spk_ind)
+        ##print(np.asarray(tp_spk_ind))
         trg_spk_ind = np.asarray(trg_spk_ind)
         spikes_target = orig_wds[trg_spk_ind]
 
-        spk_speed = np.asarray(speed_calculator(spikes_target))
+        spk_speed = np.asarray(speed_calculator(spikes_target, snum))
         # km/h
         spk_speed = spk_speed * (60 * 60) / 1000
 
