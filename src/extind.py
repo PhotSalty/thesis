@@ -31,12 +31,12 @@ while not flag:
         flag_ind = False
         while not flag_ind:
             print(f'\n > You have selected <{name[0]}> subject.')
-            print(f'\n\t- for flight-time indicator, enter 0')
             print(f'\n\t- for spike-power indicator, enter 1')
+            print(f'\n\t- for flight-time indicator, enter 2')
 
             ind_type = int(float(input(f'\n\t> Your choice: ')))
 
-            if ind_type < 0 or ind_type > 1:
+            if ind_type < 1 or ind_type > 2:
                 clear()
                 print(f' > Wrong indicator code.')
             else:
@@ -72,7 +72,7 @@ while not flag:
             if ch != 1:
                 flag = True
 
-        elif ind_type == 0:
+        elif ind_type == 2:
                         
             print('\nNot ready.')
 
