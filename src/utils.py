@@ -210,10 +210,11 @@ class recording:
                 e = round(0.2 * 64)
                 ovl = 0.6
                 while flag:
-                        bound = ls - round(spks_sample[j, 1])
+                        bound = ls - spks_sample[j, 1]
                         if bound < 0:
                                 if -bound <= wd_smpl_len: # ls > floor(spks_sample[j, 0]):
                                         step = -bound
+                                        # step = np.abs(spks_sample[j, 0] - s) - 1
                                 else:
                                         step = round(wd_smpl_len*ovl)
                                         # step = floor(wd_smpl_len*0.4)
@@ -240,6 +241,7 @@ class recording:
                 ## The maximum length of windows = total samples
                 ## Each window will contain wd_smpl_len samples
                 wds = np.zeros([s_tot, wd_smpl_len, 6])
+                # wds = np.zeros([2*s_tot, wd_smpl_len, 6])
                 labels = deepcopy(wds[:, 0, 0])
                 timestamps = deepcopy(labels)
                 acc_temp = np.vstack( ( acc, np.zeros([62, 3]) ) )
@@ -250,6 +252,9 @@ class recording:
 
                 while s <= s_tot:
                         ls = s + wd_smpl_len
+                        # if i >= 2 * s_tot:
+                        #         print(i)
+                        #         print(np.nonzero(labels)[0])
                         wds[i, :, 0:3] = deepcopy(acc_temp[s:ls, :])
                         wds[i, :, 3:] = deepcopy(ang_temp[s:ls, :])
                         timestamps[i] = s / 64
