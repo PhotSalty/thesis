@@ -804,8 +804,8 @@ def speed_calculator(wds):
                 spk = i * 9.8         # g to m/sec^2
                 spk_axs_norm = np.linalg.norm(spk, 1, axis = 1) 
                 # Max amplitude
-                max_y = np.argwhere(spk[:, 1] == np.min(spk[:, 1])).flatten()
-                max_z = np.argwhere(spk[:, 2] == np.max(spk[:, 2])).flatten()
+                max_y = np.argwhere(spk[:, 1] == np.max(spk[:, 1])).flatten()
+                max_z = np.argwhere(spk[:, 2] == np.min(spk[:, 2])).flatten()
 
                 print(max_y, '\n', max_z)
                 for foo1 in np.arange(max_y.shape[0]):
@@ -867,7 +867,7 @@ def speed_calculator(wds):
 def spk_speed(results, n_subjects):
 
         names = np.asarray(['sltn', 'gali', 'sdrf', 'pasx', 'anti', 'komi', 'fot', 'agge', 'conp', 'LH_galios'])
-        subj, _, _, _ = subjects_init_raw(names)
+        subj, _, _, _ = subjects_init_raw(names, 43)
         
         pred_spk_spd = np.zeros(10, dtype = object)
         pred_spk_ind = np.zeros(10, dtype = object)
