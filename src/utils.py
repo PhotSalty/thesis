@@ -850,7 +850,7 @@ def speed_calculator(wds):
                 
                 #print(l_min_0, max_i, l_min_1)
                 
-                if pli == 15:
+                if pli == 13:
                     fig = plt.figure()
                     plt.plot(spk)
                     plt.grid()
