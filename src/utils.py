@@ -804,15 +804,18 @@ def speed_calculator(wds):
                 spk = i * 9.8         # g to m/sec^2
                 spk_axs_norm = np.linalg.norm(spk, 1, axis = 1) 
                 # Max amplitude
-                #max_i = np.argmax(spk_axs_norm)
-                max_i = np.argmin(spk[:, 2])
+                max_y = np.argwhere(spk[:, 1] == np.min(spk[:, 1])).flatten()
+                max_z = np.argwhere(spk[:, 2] == np.max(spk[:, 2])).flatten()
+
+                for foo1 in np.arange(max_y.shape[0]):
+                        for foo2 in np.arange(max_z.shape[0]):
+                                if max_y[foo1] == max_z[foo2]:
+                                        max_i = max_y[foo1]
                 
                 # if there is no local minima before max, from the start of the window,
                 # select the first window value/minimum. Else, pick the last minima.
-                #l_min_0 = argrelextrema(spk_axs_norm[:max_i+1], np.less)[0]
                 l_min_0 = argrelextrema(spk[:max_i+1, 2], np.greater)[0]
                 if np.shape(l_min_0)[0] == 0:
-                    #l_min_0 = np.argmin(spk_axs_norm[:max_i+1])
                     l_min_0 = np.argmax(spk[:max_i+1, 2])
                     # print(l_min_0)
                 else:
