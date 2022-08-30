@@ -91,22 +91,7 @@ def prepare_oversampled_windows(name, tg):
 	return subj
 
 
-#### Creating subject
-
-names = np.array(['sltn', 'gali', 'sdrf', 'pasx', 'anti', 'komi', 'fot', 'agge', 'conp', 'LH_galios'])
-
-tg = 2
-name = names[tg]
-
-subject = prepare_oversampled_windows(name, tg)
-
-Test_X = subject.windows
-Test_Y = subject.labels
-tmstps = subject.timestamps
-
-val = 0
-
-def pref_test(Test_X, Test_Y, val = 0):
+def perf_test(Test_X, Test_Y, val = 0):
 
 	epochs = 3
 	n_subjects = 10
@@ -131,11 +116,30 @@ def pref_test(Test_X, Test_Y, val = 0):
 	elif val == 0:
 		mdl_path += '_val-off' + sls
 		
-	pred_Y = solo_test(Test_X, means, stds, mdl_path, tg)
+	return solo_test(Test_X, means, stds, mdl_path, tg)
 
-	fig, ax = plt.subplots('Testing oversampled subject')
-	ax.plot(Test_Y, color = 'blue', linewidth = 3, label = 'Ground-Truth')
-	ax.plot(pred_Y, color = 'orange', label = 'Prediction')
-	ax.legend()
-	ax.grid()
-	plt.show()
+
+#### Creating subject
+
+names = np.array(['sltn', 'gali', 'sdrf', 'pasx', 'anti', 'komi', 'fot', 'agge', 'conp', 'LH_galios'])
+
+tg = 2
+name = names[tg]
+
+subject = prepare_oversampled_windows(name, tg)
+
+Test_X = subject.windows
+Test_Y = subject.labels
+tmstps = subject.timestamps
+
+val = 0
+
+pred_Y = perf_test(Test_X, Test_Y, val = 0)
+
+fig, ax = plt.subplots('Testing oversampled subject')
+ax.plot(Test_Y, color = 'blue', linewidth = 3, label = 'Ground-Truth')
+ax.plot(pred_Y, color = 'orange', label = 'Prediction')
+ax.legend()
+ax.grid()
+
+plt.show()

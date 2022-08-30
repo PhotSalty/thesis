@@ -16,6 +16,25 @@ def print_metrics(Acc, Prec, Rec, F1s, mtype):
 \tF1-score            ->   {F1s:.3f}\n'''.expandtabs(6))
 
 
+### One subject testing:
+def solo_test(Test_X, means, stds, mdl_path, tg): #, Test_Y, fig_path, tg):
+
+        print(f'\n > Testing subject <{tg}>:')
+
+        # fig_path += 's{tg}_testing' + sls
+        # if not os.path.exists(fig_path):
+        #         os.makedirs(fig_path)
+
+        Test_X = apply_standardization(Test_X, means, stds)
+
+        model_path = mdl_path + 'M' + tg + '_10' + '.mdl'
+
+        model = load_model(model_path)
+        pred_Y = model.predict(x = Test_X)
+
+        return pred_Y
+
+
 ### Testing subjects' models and display total results
 def LOSO_testing(windows, labels, tag, means, stds, epochs, n_subjects, mdl_path):
 
