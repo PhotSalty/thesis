@@ -55,8 +55,8 @@ def prepare_oversampled_windows(name, tg):
 	labels = deepcopy(wds[:, 0, 0])
 	timestamps = deepcopy(labels)
 
-	facc_ext = np.vstack(facc, np.zeros([62, 3]))
-	fang_ext = np.vstack(fang, np.zeros([62, 3]))
+	facc_ext = np.vstack((facc, np.zeros([62, 3])))
+	fang_ext = np.vstack((fang, np.zeros([62, 3])))
 
 	i, j, s = 0, 0, 0
 
@@ -126,6 +126,7 @@ names = np.array(['sltn', 'gali', 'sdrf', 'pasx', 'anti', 'komi', 'fot', 'agge',
 tg = 2
 name = names[tg]
 
+tg = '0' + str(tg)
 subject = prepare_oversampled_windows(name, tg)
 
 Test_X = subject.windows
