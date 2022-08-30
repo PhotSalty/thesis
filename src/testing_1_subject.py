@@ -51,7 +51,7 @@ def prepare_oversampled_windows(name, tg):
 	#### Windowing:
 
 	sub_len = ceil(len(facc[:, 0]))
-	wds = np.zeros([sub_len, wdlen, 6])
+	wds = np.zeros([sub_len + 2 , wdlen, 6])
 	labels = deepcopy(wds[:, 0, 0])
 	timestamps = deepcopy(labels)
 
@@ -137,7 +137,8 @@ val = 0
 
 pred_Y = perf_test(Test_X, Test_Y, val = 0)
 
-fig, ax = plt.subplots('Testing oversampled subject')
+fig, ax = plt.subplots()
+fig.suptitle('Testing oversampled subject')
 ax.plot(Test_Y, color = 'blue', linewidth = 3, label = 'Ground-Truth')
 ax.plot(pred_Y, color = 'orange', label = 'Prediction')
 ax.legend()
