@@ -318,6 +318,11 @@ ft_gtr = np.asarray(ft_gtr)
 ft_prd = np.asarray(ft_prd)
 samp_dif = np.asarray(samp_dif)
 
+with open('ftimes.pkl', 'wb') as f:
+    pkl.dump(ft_gtr, f)
+    pkl.dump(ft_prd, f)
+    pkl.dump(samp_dif, f)
+
 print(ft_gtr, ft_prd, samp_dif)
 print('\n\n', ft_gtr.shape, ft_prd.shape)
 
@@ -332,5 +337,13 @@ print('\n\nSpearman correlation coefficients:\n', spearman_result)
 
 fig = plt.figure('Video and predicted flight time correlation')
 plt.plot(ft_gtr, ft_prd, 'o')
+
+fig = plt.figure('Ground-truth boxplot')
+plt.boxplot(ft_gtr)
+plt.ylim(0, 1)
+
+fig = plt.figure('Predicted boxplot')
+plt.boxplot(ft_prd)
+plt.ylim(0, 1)
 
 plt.show()
