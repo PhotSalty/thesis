@@ -19,6 +19,11 @@ def print_metrics(Acc, Prec, Rec, F1s, mtype):
 ### One subject testing:
 def solo_test(Test_X, means, stds, mdl_path, tg): #, Test_Y, fig_path, tg):
 
+        if tg < 10:
+                tg = '0' + str(tg)
+        else:
+                tg = str(tg)
+
         print(f'\n > Testing subject <{tg}>:')
 
         # fig_path += 's{tg}_testing' + sls
