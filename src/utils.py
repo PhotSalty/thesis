@@ -1022,6 +1022,79 @@ def spk_speed_1(results, name):
         return true_spk_ind, true_spk_spd, pred_spk_ind, pred_spk_spd
 
 
+
+def spk_speed_2(results, name):
+
+        subj, _, _, _ = subjects_init_raw(name, 43)
+        
+        # Subject initialization
+        target = results[0]
+        pred = results[1]
+        #orig_wds = results[s, 2]
+        orig_wds = subj[0].windows
+
+        orig_wds = orig_wds[:, :, :3]
+        #print(orig_wds.shape)
+                
+        #print(orig_wds.shape)
+        # Calculate predicted spikes speed
+        p, _ = find_peaks(pred[:, 0], distance = 22)
+       
+        pred_peaks = np.zeros(pred.shape, dtype = np.float64)
+        pred_peaks[p] = pred[p]
+
+        # Eliminating false positives
+        tp_pred = deepcopy(pred_peaks)
+        for i in p:
+                if target[i] == 0:
+                        tp_pred[i] = 0
+
+        tp_spk_ind = np.nonzero(tp_pred)[0]
+        #print(tp_spk_ind)
+        #print(tp_spk_ind.shape)
+        spikes_pred = orig_wds[tp_spk_ind]
+        
+        # which spike to plot
+        snum = 100
+        # m/s
+        spk_speed = np.asarray(speed_calculator(spikes_pred, snum))
+        # km/h
+        spk_speed = spk_speed * (60 * 60) / 1000
+       
+        #if s == 2:
+        #    plt.plot(spikes_pred[0])
+
+        pred_spk_ind = tp_spk_ind
+        pred_spk_spd = spk_speed
+
+        # Calculate original spikes speed
+        p, _ = find_peaks(target)
+        
+        #print(p)
+        trg_spk_ind = []
+        for i in np.arange(len(p)):
+            for j in np.arange(len(tp_spk_ind)):
+                if np.abs(p[i] - tp_spk_ind[j]) < 15:
+                    trg_spk_ind.append(p[i])
+        
+        #print(trg_spk_ind)
+        ##print(np.asarray(tp_spk_ind))
+        trg_spk_ind = np.asarray(trg_spk_ind)
+        spikes_target = orig_wds[trg_spk_ind]
+
+        spk_speed = np.asarray(speed_calculator(spikes_target, snum))
+        # km/h
+        spk_speed = spk_speed * (60 * 60) / 1000
+
+        true_spk_ind = trg_spk_ind 
+        true_spk_spd = spk_speed
+
+        #plt.show()
+
+        return true_spk_ind, true_spk_spd, pred_spk_ind, pred_spk_spd
+
+
+
 def flight_time(results, name):
 
         subj, _, _, _ = subjects_init_raw(name, 43)
