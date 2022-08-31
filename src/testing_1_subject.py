@@ -1,6 +1,6 @@
 from utils import *
 from testing_functions import LOSO_testing, solo_test
-import matplotlib.patches as patches
+# import matplotlib.patches as patches
 from scipy.stats import pearsonr
 
 def find_label(spikes, j, wdlen, s):
@@ -8,12 +8,10 @@ def find_label(spikes, j, wdlen, s):
     ls = s + wdlen
     flag = True
     e = round(0.2 * 64)
-    ovl = None
 
     while flag:
-		
         bound = ls - spikes[j, 1]
-
+        
         if bound < 0:
             flag = False
             label = 0
@@ -137,152 +135,166 @@ def only_tp_spikes(spk_strt, spk_stop, test_strt, test_stop):
     return spk_strt, spk_stop
 
 
+def plot_video_with_pred(video_spike, prd, t):
+    fig, ax = plt.subplots()
+    fig.suptitle('Actual spikes, extended spikes, predicted spikes')
 
-#### Creating subject
+    #ax1.plot(t, video_gt, color = 'blue')
+    #for ps in pred_spike:
+    #    ax1.axvspan(xmin = ps[0]/64, xmax = (ps[1]+43)/64, color = 'lightgreen', alpha = 0.8)
+
+    ax.plot(t, prd, color = 'orange')
+    for vs in video_spike:
+        ax.axvspan(xmin = vs[0]/64, xmax = (vs[1])/64, color = 'lightgreen', alpha = 0.8)
+
+    ax.legend(['predicted', 'video ground-truth'])
+    ax.grid()
+
+    plt.show()
+
+
+###################### MAIN #########################################################################################################
+
+###### Creating subject
 
 names = np.array(['sltn', 'gali', 'sdrf', 'pasx', 'anti', 'komi', 'fot', 'agge', 'conp', 'LH_galios'])
 
-tg = 2
-name = names[tg]
+# tg = 2
+ft_gtr = []
+ft_prd = []
 
-tg = '0' + str(tg)
-subject = prepare_oversampled_windows(name, tg)
+for tg in np.arange(len(names)):
 
-t = np.arange(len(subject.raw_acc)/64, step = 1/64)
+    name = names[tg]
 
-Test_X = subject.windows
-Test_Y = subject.labels
-tmstps = subject.timestamps
+    tg = '0' + str(tg)
+    subject = prepare_oversampled_windows(name, tg)
 
-val = 0
+    t = np.arange(len(subject.raw_acc)/64, step = 1/64)
 
-pred_Y = perf_test(Test_X, Test_Y, val = 0)
-pred_Y = np.where(pred_Y < 0.6, 0, 1)
+    Test_X = subject.windows
+    Test_Y = subject.labels
+    tmstps = subject.timestamps
+
+    val = 0
+
+    pred_Y = perf_test(Test_X, Test_Y, val = 0)
+    pred_Y = np.where(pred_Y < 0.6, 0, 1)
 
 ###### Make pred and test equal to raw_acc length
-temp = np.zeros(subject.raw_acc.shape[0])
-temp[1:] = pred_Y[:, 0]
-pred_Y = temp
+    temp = np.zeros(subject.raw_acc.shape[0])
+    temp[1:] = pred_Y[:, 0]
+    pred_Y = temp
 
-temp = np.zeros(subject.raw_acc.shape[0])
-temp[1:] = Test_Y
-Test_Y = temp
+    temp = np.zeros(subject.raw_acc.shape[0])
+    temp[1:] = Test_Y
+    Test_Y = temp
 
 
 ###### Find prediction and extended spikes start-stop
-pspk_strt = []
-pspk_stop = []
-tspk_strt = []
-tspk_stop = []
-flagp = False
-flagt = False
-for i in np.arange(len(pred_Y)):
-    if pred_Y[i] == 1 and flagp == False:
-        pspk_strt.append(i)
-        flagp = True
-    elif pred_Y[i] == 0 and flagp == True:
-        pspk_stop.append(i-1)
-        flagp = False
+    pspk_strt = []
+    pspk_stop = []
+    tspk_strt = []
+    tspk_stop = []
+    flagp = False
+    flagt = False
+    for i in np.arange(len(pred_Y)):
+        if pred_Y[i] == 1 and flagp == False:
+            pspk_strt.append(i)
+            flagp = True
+        elif pred_Y[i] == 0 and flagp == True:
+            pspk_stop.append(i-1)
+            flagp = False
 
-    if Test_Y[i] == 1 and flagt == False:
-        tspk_strt.append(i)
-        flagt = True
-    elif Test_Y[i] == 0 and flagt == True:
-        tspk_stop.append(i-1)
-        flagt = False
+        if Test_Y[i] == 1 and flagt == False:
+            tspk_strt.append(i)
+            flagt = True
+        elif Test_Y[i] == 0 and flagt == True:
+            tspk_stop.append(i-1)
+            flagt = False
 
-pspk_strt = np.asarray(pspk_strt)
-pspk_stop = np.asarray(pspk_stop)
-tspk_strt = np.asarray(tspk_strt)
-tspk_stop = np.asarray(tspk_stop)
+    pspk_strt = np.asarray(pspk_strt)
+    pspk_stop = np.asarray(pspk_stop)
+    tspk_strt = np.asarray(tspk_strt)
+    tspk_stop = np.asarray(tspk_stop)
 
-spikes = subject.spikes
+    spikes = subject.spikes
 
-print('\n\n > Predicted shape: ', pspk_strt.shape, '\n > Video Shape: ', spikes.shape, '\n\n')
+    print('\n\n > Predicted shape: ', pspk_strt.shape, '\n > Video Shape: ', spikes.shape, '\n\n')
 
-##### Selecet only true positive spikes
-## prediction spikes
-pspk_strt, pspk_stop = only_tp_spikes(pspk_strt, pspk_stop, spikes[:, 0], spikes[:, 1])
-## video spikes
-#vspk_strt, vspk_stop = only_tp_spikes(spikes[:, 0], spikes[:, 1], pspk_strt, pspk_stop)
-vspk_strt, vspk_stop = spikes[:, 0], spikes[:, 1]
+###### Select only true positive spikes
+    ## prediction spikes
+    pspk_strt, pspk_stop = only_tp_spikes(pspk_strt, pspk_stop, spikes[:, 0], spikes[:, 1])
+    ## video spikes
+    #vspk_strt, vspk_stop = only_tp_spikes(spikes[:, 0], spikes[:, 1], pspk_strt, pspk_stop)
+    vspk_strt, vspk_stop = spikes[:, 0], spikes[:, 1]
 
-    
+        
 ###### Concatenate start with stop
-pred_spike = np.vstack((pspk_strt, pspk_stop)).transpose()
-target_spike = np.vstack((tspk_strt, tspk_stop)).transpose()
-video_spike = np.vstack((vspk_strt, vspk_stop)).transpose()
+    pred_spike = np.vstack((pspk_strt, pspk_stop)).transpose()
+    target_spike = np.vstack((tspk_strt, tspk_stop)).transpose()
+    video_spike = np.vstack((vspk_strt, vspk_stop)).transpose()
 
-print('\n\n > Predicted shape: ', pred_spike.shape, '\n > Video Shape: ', video_spike.shape, '\n\n')
+    print('\n\n > Predicted shape: ', pred_spike.shape, '\n > Video Shape: ', video_spike.shape, '\n\n')
 
-print(' > Start_delay: ', np.abs(pred_spike[:, 0] - video_spike[:, 0]))
+    print(' > Start_delay: ', np.abs(pred_spike[:, 0] - video_spike[:, 0]))
 
-##### flight time ground-truth and predicted spikes
-fltime_gtr = (video_spike[:, 1] - video_spike[:, 0]) / 64
-fltime_prd = ((pred_spike[:, 1] + 43) - pred_spike[:, 0]) / 64
+###### flight time ground-truth and predicted spikes
+    fltime_gtr = (video_spike[:, 1] - video_spike[:, 0]) / 64
+    fltime_prd = ((pred_spike[:, 1] + 43) - pred_spike[:, 0]) / 64
 
-df = pd.DataFrame(fltime_gtr, columns = ['ground_truth'])
-df['prediction'] = fltime_prd
-df['gt_timestamp'] = np.round(video_spike[:, 0] / 64, 2)
-df['pred_timestamp'] = np.round(pred_spike[:, 0] / 64, 2)
-df['pred_start_offset'] = np.round((video_spike[:, 0] - pred_spike[:, 0]) / 64, 2)
-df['gt_sample'] = video_spike[:, 0]
-df['pred_sample'] = pred_spike[:, 0]
+    # df = pd.DataFrame(fltime_gtr, columns = ['ground_truth'])
+    # df['prediction'] = fltime_prd
+    # df['gt_timestamp'] = np.round(video_spike[:, 0] / 64, 2)
+    # df['pred_timestamp'] = np.round(pred_spike[:, 0] / 64, 2)
+    # df['start_offset_sec'] = np.round((video_spike[:, 0] - pred_spike[:, 0]) / 64, 2)
+    # df['gt_sample'] = video_spike[:, 0]
+    # df['pred_sample'] = pred_spike[:, 0]
+    # df['start_offset_samp'] = video_spike[:, 0] - pred_spike[:, 0]
 
-print(' > Flight time:\n\n')
-print(df)
-
-
-
+    # print(' > Flight time:\n\n')
+    # print(df)
 
 
-##### Video spikes signal (0 / 1)
-video_gt = np.zeros(len(subject.raw_acc))
-for s in spikes:
-    o = np.arange(s[0], s[1])
-    video_gt[o] = 1
+    ###### Video spikes signal (0 / 1)
+    video_gt = np.zeros(len(subject.raw_acc))
+    for s in spikes:
+        o = np.arange(s[0], s[1])
+        video_gt[o] = 1
 
 
-##### [Shift left] or [extend spike] for 43/64sec
-#prd = deepcopy(pred_Y)
+    ###### [Shift left] or [extend spike] for 43/64sec
+    #prd = deepcopy(pred_Y)
 
-##### Shift left
-#prd[43:] = prd[:-43]
+    ## Shift left
+    #prd[43:] = prd[:-43]
 
-##### Extend spike time for 43/64 sec
-#for i in pspk_stop:
-#    prd[i:i+43] = 1
-
-
-###### construct pred_signal:
-prd = np.zeros(len(pred_Y))
-for sp in pred_spike:
-    i = sp[0]
-    j = sp[1] + 43
-    prd[i:j] = 1
+    ## Extend spike time for 43/64 sec
+    #for i in pspk_stop:
+    #    prd[i:i+43] = 1
 
 
+    ###### construct pred_signal:
+    prd = np.zeros(len(pred_Y))
+    for sp in pred_spike:
+        i = sp[0]
+        j = sp[1] + 43
+        prd[i:j] = 1
+
+
+    ###### plot ground-truth with prediction spikes
+    # plot_video_with_pred(video_spike, prd, t)
+
+    ft_gtr.extend(fltime_gtr)
+    ft_prd.extend(fltime_prd)
+
+
+
+print(ft_gtr.shape, ft_prd.shape)
 ###### Pearson Correlation coefficients:
-pearson_result = pearsonr(df['ground_truth'], df['prediction'])
+pearson_result = pearsonr(fltime_gtr, fltime_prd)
 
 print('\n\nPearson correlation coefficients:\n', pearson_result) 
 
 fig = plt.figure('Pearson')
-plt.plot(df['ground_truth'], df['prediction'], 'o')
-
-###### plot ground-truth with prediction spikes
-fig, ax = plt.subplots()
-fig.suptitle('Actual spikes, extended spikes, predicted spikes')
-
-#ax1.plot(t, video_gt, color = 'blue')
-#for ps in pred_spike:
-#    ax1.axvspan(xmin = ps[0]/64, xmax = (ps[1]+43)/64, color = 'lightgreen', alpha = 0.8)
-
-ax.plot(t, prd, color = 'orange')
-for vs in video_spike:
-    ax.axvspan(xmin = vs[0]/64, xmax = (vs[1])/64, color = 'lightgreen', alpha = 0.8)
-
-ax.legend(['predicted', 'video ground-truth'])
-ax.grid()
-
-plt.show()
+plt.plot(fltime_gtr, fltime_prd, 'o')
