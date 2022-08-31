@@ -137,6 +137,60 @@ def only_tp_spikes(spk_strt, spk_stop, test_strt, test_stop):
     return spk_strt, spk_stop
 
 
+
+def spike_start_stop(pred_Y, Test_Y, spikes):
+    pspk_strt = []
+    pspk_stop = []
+    tspk_strt = []
+    tspk_stop = []
+    flagp = False
+    flagt = False
+    for i in np.arange(len(pred_Y)):
+        if pred_Y[i] == 1 and flagp == False:
+            pspk_strt.append(i)
+            flagp = True
+        elif pred_Y[i] == 0 and flagp == True:
+            pspk_stop.append(i-1)
+            flagp = False
+
+        if Test_Y[i] == 1 and flagt == False:
+            tspk_strt.append(i)
+            flagt = True
+        elif Test_Y[i] == 0 and flagt == True:
+            tspk_stop.append(i-1)
+            flagt = False
+
+    pspk_strt = np.asarray(pspk_strt)
+    pspk_stop = np.asarray(pspk_stop)
+    tspk_strt = np.asarray(tspk_strt)
+    tspk_stop = np.asarray(tspk_stop)
+
+
+    print('\n\n > Predicted shape: ', pspk_strt.shape, '\n > Video Shape: ', spikes.shape, '\n\n')
+    
+    print(pspk_strt, spikes[:,0])
+###### Select only true positive spikes
+    ## prediction spikes
+    pspk_strt, pspk_stop = only_tp_spikes(pspk_strt, pspk_stop, spikes[:, 0], spikes[:, 1])
+    ## video spikes
+    vspk_strt, vspk_stop = only_tp_spikes(spikes[:, 0], spikes[:, 1], pspk_strt, pspk_stop)
+    #vspk_strt, vspk_stop = spikes[:, 0], spikes[:, 1]
+    # print(pspk_strt, vspk_strt)
+    
+        
+###### Concatenate start with stop
+    pred_spike = np.vstack((pspk_strt, pspk_stop)).transpose()
+    target_spike = np.vstack((tspk_strt, tspk_stop)).transpose()
+    video_spike = np.vstack((vspk_strt, vspk_stop)).transpose()
+
+    print('\n\n > New Predicted shape: ', pred_spike.shape, '\n > New Video Shape: ', video_spike.shape, '\n\n')
+
+    print(' > Start_delay: ', np.abs(pred_spike[:, 0] - video_spike[:, 0]))
+
+    return pred_spike, target_spike, video_spike
+
+
+
 def plot_video_with_pred(video_spike, prd, t):
     fig, ax = plt.subplots()
     fig.suptitle('Actual spikes, extended spikes, predicted spikes')
@@ -194,59 +248,43 @@ for tg in np.arange(len(names)):
     Test_Y = temp
 
 
-###### Find prediction and extended spikes start-stop
-    pspk_strt = []
-    pspk_stop = []
-    tspk_strt = []
-    tspk_stop = []
-    flagp = False
-    flagt = False
-    for i in np.arange(len(pred_Y)):
-        if pred_Y[i] == 1 and flagp == False:
-            pspk_strt.append(i)
-            flagp = True
-        elif pred_Y[i] == 0 and flagp == True:
-            pspk_stop.append(i-1)
-            flagp = False
-
-        if Test_Y[i] == 1 and flagt == False:
-            tspk_strt.append(i)
-            flagt = True
-        elif Test_Y[i] == 0 and flagt == True:
-            tspk_stop.append(i-1)
-            flagt = False
-
-    pspk_strt = np.asarray(pspk_strt)
-    pspk_stop = np.asarray(pspk_stop)
-    tspk_strt = np.asarray(tspk_strt)
-    tspk_stop = np.asarray(tspk_stop)
-
+###### Spike start-stop and Flight time
     spikes = subject.spikes
 
-    print('\n\n > Predicted shape: ', pspk_strt.shape, '\n > Video Shape: ', spikes.shape, '\n\n')
-    
-    print(pspk_strt, spikes[:,0])
-###### Select only true positive spikes
-    ## prediction spikes
-    pspk_strt, pspk_stop = only_tp_spikes(pspk_strt, pspk_stop, spikes[:, 0], spikes[:, 1])
-    ## video spikes
-    vspk_strt, vspk_stop = only_tp_spikes(spikes[:, 0], spikes[:, 1], pspk_strt, pspk_stop)
-    #vspk_strt, vspk_stop = spikes[:, 0], spikes[:, 1]
-    print(pspk_strt, vspk_strt)
-    
-        
-###### Concatenate start with stop
-    pred_spike = np.vstack((pspk_strt, pspk_stop)).transpose()
-    target_spike = np.vstack((tspk_strt, tspk_stop)).transpose()
-    video_spike = np.vstack((vspk_strt, vspk_stop)).transpose()
+### Video spikes signal (0 / 1)
+    video_gt = np.zeros(len(subject.raw_acc))
+    for s in spikes:
+        o = np.arange(s[0], s[1])
+        video_gt[o] = 1
 
-    print('\n\n > Predicted shape: ', pred_spike.shape, '\n > Video Shape: ', video_spike.shape, '\n\n')
+### Custom method:
+    ## Find prediction and extended spikes start-stop
+    pred_spike, target_spike, video_spike = spike_start_stop(pred_Y, Test_Y, spikes)
 
-    print(' > Start_delay: ', np.abs(pred_spike[:, 0] - video_spike[:, 0]))
-
-###### flight time ground-truth and predicted spikes
+    ## flight time ground-truth and predicted spikes
     fltime_gtr = (video_spike[:, 1] - video_spike[:, 0]) / 64
     fltime_prd = ((pred_spike[:, 1] + 43) - pred_spike[:, 0]) / 64
+
+    ## construct pred_signal:
+    prd = np.zeros(len(pred_Y))
+    for sp in pred_spike:
+        i = sp[0]
+        j = sp[1] + 43
+        prd[i:j] = 1
+
+### Summarizing method:
+    ## Shift left
+    # prd = deepcopy(pred_Y)
+    # prd[43:] = prd[:-43]
+
+    ## Extend spike time for 43/64 sec
+    #for i in pspk_stop:
+    #    prd[i:i+43] = 1
+
+    ## flight time ground-truth and predicted spikes
+    # for sp in spikes:
+        # prd
+
 
     # df = pd.DataFrame(fltime_gtr, columns = ['ground_truth'])
     # df['prediction'] = fltime_prd
@@ -261,30 +299,10 @@ for tg in np.arange(len(names)):
     # print(df)
 
 
-    ###### Video spikes signal (0 / 1)
-    video_gt = np.zeros(len(subject.raw_acc))
-    for s in spikes:
-        o = np.arange(s[0], s[1])
-        video_gt[o] = 1
 
 
-    ###### [Shift left] or [extend spike] for 43/64sec
-    #prd = deepcopy(pred_Y)
-
-    ## Shift left
-    #prd[43:] = prd[:-43]
-
-    ## Extend spike time for 43/64 sec
-    #for i in pspk_stop:
-    #    prd[i:i+43] = 1
 
 
-    ###### construct pred_signal:
-    prd = np.zeros(len(pred_Y))
-    for sp in pred_spike:
-        i = sp[0]
-        j = sp[1] + 43
-        prd[i:j] = 1
 
 
     ###### plot ground-truth with prediction spikes
