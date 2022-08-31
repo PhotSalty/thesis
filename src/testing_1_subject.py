@@ -1,6 +1,7 @@
 from utils import *
 from testing_functions import LOSO_testing, solo_test
 import matplotlib.patches as patches
+from scipy.stats import pearsonr
 
 def find_label(spikes, j, wdlen, s):
 
@@ -220,14 +221,19 @@ print(' > Start_delay: ', np.abs(pred_spike[:, 0] - video_spike[:, 0]))
 fltime_gtr = (video_spike[:, 1] - video_spike[:, 0]) / 64
 fltime_prd = ((pred_spike[:, 1] + 43) - pred_spike[:, 0]) / 64
 
-df = pd.DataFrame(fltime_gtr, columns = ['ground truth'])
+df = pd.DataFrame(fltime_gtr, columns = ['ground_truth'])
 df['prediction'] = fltime_prd
-df['gt_timestamp'] = video_spike[:, 0] / 64
-df['pred_timestamp'] = pred_spike[:, 0] / 64
-df['pred_start_offset'] = (video_spike[:, 0] - pred_spike[:, 0]) / 64
+df['gt_timestamp'] = np.round(video_spike[:, 0] / 64, 2)
+df['pred_timestamp'] = np.round(pred_spike[:, 0] / 64, 2)
+df['pred_start_offset'] = np.round((video_spike[:, 0] - pred_spike[:, 0]) / 64, 2)
+df['gt_sample'] = video_spike[:, 0]
+df['pred_sample'] = pred_spike[:, 0]
 
 print(' > Flight time:\n\n')
 print(df)
+
+
+
 
 
 ##### Video spikes signal (0 / 1)
@@ -254,6 +260,15 @@ for sp in pred_spike:
     i = sp[0]
     j = sp[1] + 43
     prd[i:j] = 1
+
+
+###### Pearson Correlation coefficients:
+pearson_result = pearsonr(df['ground_truth'], df['prediction'])
+
+print('\n\nPearson correlation coefficients:\n', pearson_result) 
+
+fig = plt.figure('Pearson')
+plt.plot(df['ground_truth'], df['prediction'], 'o')
 
 ###### plot ground-truth with prediction spikes
 fig, ax = plt.subplots()
