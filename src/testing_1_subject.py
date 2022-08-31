@@ -1,7 +1,7 @@
 from utils import *
 from testing_functions import LOSO_testing, solo_test
 # import matplotlib.patches as patches
-from scipy.stats import pearsonr
+from scipy.stats import pearsonr, spearmanr
 
 def find_label(spikes, j, wdlen, s):
 
@@ -91,7 +91,7 @@ def prepare_oversampled_windows(name, tg):
     return subj
 
 
-def perf_test(Test_X, Test_Y, val = 0):
+def perf_test(Test_X, Test_Y, tg, val = 0):
 
     epochs = 3
     n_subjects = 10
@@ -116,7 +116,7 @@ def perf_test(Test_X, Test_Y, val = 0):
     elif val == 0:
             mdl_path += '_val-off' + sls
             
-    return solo_test(Test_X, means, stds, mdl_path, tg)
+    return solo_test(Test_X, means, stds, mdl_path, tg+1)
 
 
 def only_tp_spikes(spk_strt, spk_stop, test_strt, test_stop):
@@ -125,9 +125,11 @@ def only_tp_spikes(spk_strt, spk_stop, test_strt, test_stop):
     temp_stop = []
     for i in np.arange(len(spk_strt)):
         for j in np.arange(len(test_strt)):
-            if np.abs(spk_strt[i] - test_strt[j]) < 20:
+            if np.abs(spk_strt[i] - test_strt[j]) < 30:
                 temp_strt.append(spk_strt[i])
                 temp_stop.append(spk_stop[i])
+                test_strt = np.delete(test_strt, j)
+                break
 
     spk_strt = np.asarray(temp_strt)
     spk_stop = np.asarray(temp_stop)
@@ -162,12 +164,13 @@ names = np.array(['sltn', 'gali', 'sdrf', 'pasx', 'anti', 'komi', 'fot', 'agge',
 # tg = 2
 ft_gtr = []
 ft_prd = []
+samp_dif = []
 
 for tg in np.arange(len(names)):
 
     name = names[tg]
 
-    tg = '0' + str(tg)
+    #tg = '0' + str(tg)
     subject = prepare_oversampled_windows(name, tg)
 
     t = np.arange(len(subject.raw_acc)/64, step = 1/64)
@@ -178,7 +181,7 @@ for tg in np.arange(len(names)):
 
     val = 0
 
-    pred_Y = perf_test(Test_X, Test_Y, val = 0)
+    pred_Y = perf_test(Test_X, Test_Y, tg)
     pred_Y = np.where(pred_Y < 0.6, 0, 1)
 
 ###### Make pred and test equal to raw_acc length
@@ -221,14 +224,16 @@ for tg in np.arange(len(names)):
     spikes = subject.spikes
 
     print('\n\n > Predicted shape: ', pspk_strt.shape, '\n > Video Shape: ', spikes.shape, '\n\n')
-
+    
+    print(pspk_strt, spikes[:,0])
 ###### Select only true positive spikes
     ## prediction spikes
     pspk_strt, pspk_stop = only_tp_spikes(pspk_strt, pspk_stop, spikes[:, 0], spikes[:, 1])
     ## video spikes
-    #vspk_strt, vspk_stop = only_tp_spikes(spikes[:, 0], spikes[:, 1], pspk_strt, pspk_stop)
-    vspk_strt, vspk_stop = spikes[:, 0], spikes[:, 1]
-
+    vspk_strt, vspk_stop = only_tp_spikes(spikes[:, 0], spikes[:, 1], pspk_strt, pspk_stop)
+    #vspk_strt, vspk_stop = spikes[:, 0], spikes[:, 1]
+    print(pspk_strt, vspk_strt)
+    
         
 ###### Concatenate start with stop
     pred_spike = np.vstack((pspk_strt, pspk_stop)).transpose()
@@ -287,14 +292,27 @@ for tg in np.arange(len(names)):
 
     ft_gtr.extend(fltime_gtr)
     ft_prd.extend(fltime_prd)
+    samp_dif.extend(pred_spike[:, 0] - video_spike[:,0])
 
 
 
-print(ft_gtr.shape, ft_prd.shape)
+ft_gtr = np.asarray(ft_gtr)
+ft_prd = np.asarray(ft_prd)
+samp_dif = np.asarray(samp_dif)
+
+print(ft_gtr, ft_prd, samp_dif)
+print('\n\n', ft_gtr.shape, ft_prd.shape)
+
 ###### Pearson Correlation coefficients:
 pearson_result = pearsonr(fltime_gtr, fltime_prd)
 
-print('\n\nPearson correlation coefficients:\n', pearson_result) 
+###### Spearman
+spearman_result = spearmanr(fltime_gtr, fltime_prd)
 
-fig = plt.figure('Pearson')
-plt.plot(fltime_gtr, fltime_prd, 'o')
+print('\n\nPearson correlation coefficients:\n', pearson_result) 
+print('\n\nSpearman correlation coefficients:\n', spearman_result) 
+
+fig = plt.figure('Video and predicted flight time correlation')
+plt.plot(ft_gtr, ft_prd, 'o')
+
+plt.show()
