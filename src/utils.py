@@ -205,105 +205,36 @@ class recording:
 
 # 3. Windowing methods
         def find_step_and_label(self, spks_sample, j, wd_smpl_len, s):
-                spk_strt = spks_sample[j, 0]
-                spk_stop = spks_sample[j, 1]
-                spk_half = spk_strt + round((spk_stop - spk_strt) / 2)
-                spk_lthird = spk_stop - round((spk_stop - spk_strt) / 3)
-
                 ls = s + wd_smpl_len
-                epsilon = round((spk_stop - spk_strt) / 3)
-                ovl = 0.6
                 flag = True
-
+                e = round(0.2 * 64)
+                ovl = 0.6
                 while flag:
-                        dstrt = ls - spk_strt
-                        dstop = ls - spk_stop
-                        
-                        # window-end before spike-start
-                        if dstrt < 0:
-                                
-                                # next sample-window ends after spike-start
-                                if -dstrt <= wd_smpl_len*ovl:
-                                        step = spk_half - ls
-                                        
-                                # next sample-window ends before spike-start
+                        bound = ls - spks_sample[j, 1]
+                        if bound < 0:
+                                if -bound <= wd_smpl_len: # ls > floor(spks_sample[j, 0]):
+                                        step = -bound
+                                        # step = np.abs(spks_sample[j, 0] - s) - 1
                                 else:
                                         step = round(wd_smpl_len*ovl)
-
-                                flag = False        
-                                label = 0
-
-                        # window-end between spike-start and spike-stop
-                        elif dstop < 0:
-                                
-                                # between spike-half and last-spike-third
-                                if -dstop > spk_lthird:
-                                        label = 0
-                                
-                                # between last_spike_third and spike-stop
-                                else:
-                                        label = 1
-
+                                        # step = floor(wd_smpl_len*0.4)
                                 flag = False
+                                label = 0
+                        elif bound <= e: # bound >= 0 and bound <= e:
                                 step = 1
-                        
-                        # window-end between spike-stop and spike-stop+epsilon
-                        elif dstop < epsilon:
-                                step = 1
+                                flag = False
                                 label = 1
-                                flag = False
-                        
-                        # window-start before spike-stop
-                        elif dstop <= wd_smpl_len:
-                                step = 1
-                                label = 0
-                                flag = False
-
-                        # window-start after spike-stop
                         else:
-                                # if possible, start using the next spike
                                 if j < len(spks_sample[:, 0])-1:
                                         j+=1
-                                
-                                # rest signal has no spikes
+                                        # print(j)
                                 else:
                                         step = round(wd_smpl_len*ovl)
-                                        label = 0
+                                        # step = floor(wd_smpl_len*0.4)
                                         flag = False
-                                        
-                return step, label
-                                        
-        # def find_step_and_label(self, spks_sample, j, wd_smpl_len, s):
-        #         ls = s + wd_smpl_len
-        #         flag = True
-        #         e = round(0.2 * 64)
-        #         ovl = 0.6
-        #         while flag:
-        #                 bound = ls - spks_sample[j, 1]
-        #                 if bound < 0:
-        #                         if -bound <= wd_smpl_len: # ls > floor(spks_sample[j, 0]):
-        #                                 step = -bound
-        #                                 # step = np.abs(spks_sample[j, 0] - s) - 1
-        #                         else:
-        #                                 step = round(wd_smpl_len*ovl)
-        #                                 # step = floor(wd_smpl_len*0.4)
-        #                         flag = False
-        #                         label = 0
-        #                 elif bound <= e: # bound >= 0 and bound <= e:
-        #                         step = 1
-        #                         flag = False
-        #                         label = 1
-        #                 else:
-        #                         if j < len(spks_sample[:, 0])-1:
-        #                                 j+=1
-        #                                 # print(j)
-        #                         else:
-        #                                 step = round(wd_smpl_len*ovl)
-        #                                 # step = floor(wd_smpl_len*0.4)
-        #                                 flag = False
-        #                                 label = 0
+                                        label = 0
 
-        #         return step, label
+                return step, label
 
         def windowing(self, acc, ang, spks, wd_smpl_len):
                 s_tot = ceil(len(acc[:, 0]))
