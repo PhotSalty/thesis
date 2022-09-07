@@ -41,8 +41,8 @@ for s in np.arange(len(names)):
     pred_spk_spd[s] = pspd
     
 
-nb_ind = np.asarray([3, 4, 5, 6, 9])
-pr_ind = np.asarray([0, 1, 2, 7, 8])
+nb_ind = np.asarray([3, 4, 5, 6, 7, 9])
+pr_ind = np.asarray([0, 1, 2, 8])
 
 true_noobs_ind = true_spk_ind[nb_ind]
 true_noobs_spd = true_spk_spd[nb_ind]
@@ -90,11 +90,11 @@ ppros = pd.DataFrame(pspd_pr, columns = ['speed'])
 #pros['index'] = pind_pr
 
 
-dns_tpros = tpros.plot.kde().get_lines()[0].get_xydata()
-dns_tnoobs = tnoobs.plot.kde().get_lines()[0].get_xydata()
+dns_tpros = tpros.plot.kde(bw_method = 'silverman').get_lines()[0].get_xydata()
+dns_tnoobs = tnoobs.plot.kde(bw_method = 'silverman').get_lines()[0].get_xydata()
 
-dns_ppros = ppros.plot.kde().get_lines()[0].get_xydata()
-dns_pnoobs = pnoobs.plot.kde().get_lines()[0].get_xydata()
+dns_ppros = ppros.plot.kde(bw_method = 'silverman').get_lines()[0].get_xydata()
+dns_pnoobs = pnoobs.plot.kde(bw_method = 'silverman').get_lines()[0].get_xydata()
 
 plt.close('all')
 
@@ -103,37 +103,41 @@ fig = plt.figure('Density-t')
 fig.suptitle('Spike speed estimation from wrist velocity')
 plt.title('Using video-annotated spikes')
 plt.plot(dns_tpros[:, 0], dns_tpros[:, 1], color = 'red', label = 'pros')
+plt.fill_between(dns_tpros[:,0], dns_tpros[:, 1], 0, color = 'red', alpha = 0.4)
 plt.plot(dns_tnoobs[:, 0], dns_tnoobs[:, 1], color = 'blue', label = 'noobs')
+plt.fill_between(dns_tnoobs[:,0], dns_tnoobs[:, 1], 0, color = 'blue', alpha = 0.4)
 plt.xlabel('Spike speed in km/h')
-plt.ylabel('Number of spikes')
+plt.ylabel('density')
 plt.legend()
 
 fig = plt.figure('Density-p')
 fig.suptitle('Spike speed estimation from wrist velocity')
 plt.title('Using predicted spikes')
 plt.plot(dns_ppros[:, 0], dns_ppros[:, 1], color = 'red', label = 'pros')
+plt.fill_between(dns_ppros[:,0], dns_ppros[:, 1], 0, color = 'red', alpha = 0.4)
 plt.plot(dns_pnoobs[:, 0], dns_pnoobs[:, 1], color = 'blue', label = 'noobs')
+plt.fill_between(dns_pnoobs[:,0], dns_pnoobs[:, 1], 0, color = 'blue', alpha = 0.4)
 plt.xlabel('Spike speed in km/h')
-plt.ylabel('Number of spikes')
+plt.ylabel('density')
 plt.legend()
 
 
 fig, ax = plt.subplots()
 fig.suptitle('Spike speed estimation from wrist velocity')
 ax.set_title('Using video-annotated spikes')
-ax.hist(tspd_nb, bins = 12, edgecolor = 'blue', facecolor = 'none', label = 'amateur athletes')
-ax.hist(tspd_pr, bins = 12, edgecolor = 'red', facecolor = 'none', label = 'pro/semi-pro athletes')
+ax.hist(tspd_nb, bins = 16, density = True, edgecolor = 'darkblue', facecolor = 'darkblue', alpha = 0.6, label = 'amateur athletes')
+ax.hist(tspd_pr, bins = 16, density = True, edgecolor = 'darkred', facecolor = 'darkred', alpha = 0.6, label = 'pro/semi-pro athletes')
 ax.legend()
 ax.set_xlabel('Spike speed in km/h')
-ax.set_ylabel('Number of spikes')
+ax.set_ylabel('probability')
 
 fig1, ax1 = plt.subplots()
 fig1.suptitle('Spike speed estimation from wrist velocity')
 ax1.set_title('Using predicted spikes')
-ax1.hist(pspd_nb, bins = 12, edgecolor = 'blue', facecolor = 'none', label = 'amateur athletes')
-ax1.hist(pspd_pr, bins = 12, edgecolor = 'red', facecolor = 'none', label = 'pro/semi-pro athletes')
+ax1.hist(pspd_nb, bins = 16, density = True, edgecolor = 'darkblue', facecolor = 'darkblue', alpha = 0.6, label = 'amateur athletes')
+ax1.hist(pspd_pr, bins = 16, density = True, edgecolor = 'darkred', facecolor = 'darkred', alpha = 0.6, label = 'pro/semi-pro athletes')
 ax1.legend()
 ax1.set_xlabel('Spike speed in km/h')
-ax1.set_ylabel('Number of spikes')
+ax1.set_ylabel('probability')
 
 plt.show()
