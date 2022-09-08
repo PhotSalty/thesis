@@ -1,6 +1,7 @@
 
 from utils import *
 
+
 names = np.array(['sltn', 'gali', 'sdrf', 'pasx', 'anti', 'komi', 'fot', 'agge', 'conp', 'LH_galios'])
 
 
