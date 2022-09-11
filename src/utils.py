@@ -195,13 +195,16 @@ class recording:
         def filtering(self):
                 # (1) Moving average filter:
                 acc_smth = self.mav_filter(self.raw_acc, c=.25)
-                ang_smth = self.mav_filter(self.raw_ang, c=.25)
+                #ang_smth = self.mav_filter(self.raw_ang, c=.25)
                 # (2) High-pass filter:
                 facc = self.hp_filter(acc_smth, self.fs)
-                fang = self.hp_filter(ang_smth, self.fs)
+                #fang = self.hp_filter(ang_smth, self.fs)
+                #facc = self.hp_filter(self.raw_acc, self.fs)
+                #fang = self.hp_filter(self.raw_ang, self.fs)
 
                 self.filt_acc = facc
-                self.filt_ang = fang
+                #self.filt_ang = fang
+                self.filt_ang = self.raw_ang
 
 # 3. Windowing methods
         def find_step_and_label(self, spks_sample, j, wd_smpl_len, s):
